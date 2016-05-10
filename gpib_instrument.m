@@ -1,6 +1,7 @@
 classdef gpib_instrument
-    %UNTITLED2 Summary of this class goes here
-    %   Detailed explanation goes here
+    %gpib_instrument - connect and disconect to GPIB instrument
+    %   
+    % T. Mandic, University of Zagreb, 2016
     
     properties
         address = 18
