@@ -1,6 +1,7 @@
 classdef sa < gpib_instrument
-    %UNTITLED Summary of this class goes here
-    %   Detailed explanation goes here
+    %sa - class defined to change settings of Rohde & Schwarz FSP Spectrum Analyzer
+    %   
+    % T. Mandic, University of Zagreb, 2016
     
     properties
         rbw='3kHz'
