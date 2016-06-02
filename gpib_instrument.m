@@ -4,7 +4,7 @@ classdef gpib_instrument
     % T. Mandic, University of Zagreb, 2016
     
     properties
-        address = 18
+        address = 28
         vendor = 'ni'
         handle
         buffer_size = 1044480

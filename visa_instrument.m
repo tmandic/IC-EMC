@@ -23,9 +23,9 @@ classdef visa_instrument
         end
         %% open visa port
         function this_visa_instrument = open(this_visa_instrument)
-            this_visa_instrument.handle = serial(this_visa_instrument.vendor, this_visa_instrument.adress);
-            this_visa_instrument.InputBufferSize = this_visa_instrument.buffer_size;
-            this_visa_instrument.Timeout = this_visa_instrument.timeout;    
+            this_visa_instrument.handle = visa(this_visa_instrument.vendor, this_visa_instrument.adress);
+            this_visa_instrument.handle.InputBufferSize = this_visa_instrument.buffer_size;
+            this_visa_instrument.handle.Timeout = this_visa_instrument.timeout;    
             fopen(this_visa_instrument.handle);
             if strcmp('open', this_visa_instrument.handle.status)  
                 disp('visa_instrument: VISA port open');     
@@ -41,7 +41,6 @@ classdef visa_instrument
             elseif strcmp('closed', this_visa_instrument.handle.status)             
                 disp('visa_instrument: VISA port closed');     
             end            
-        end        
-    end
-    
+        end  
+    end   
 end
