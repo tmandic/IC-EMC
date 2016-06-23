@@ -66,7 +66,7 @@ classdef plot2D < toNxM
                 xlim([this_plot2D.x_min this_plot2D.x_max]);
                 ylim([this_plot2D.y_min this_plot2D.y_max]);                
                 legend1 = legend(gca,'show');
-                if isempty(sparameter.position)
+                if isempty(this_plot2D.position)
                     set(legend1,'Location',this_plot2D.location);            
                 else
                     set(legend1,'Position',this_plot2D.position);            
