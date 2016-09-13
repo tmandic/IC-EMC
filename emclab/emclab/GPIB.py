@@ -11,5 +11,4 @@ class GPIB(object):
         """Initialization.
 
         """
-
         raise NotImplementedError
