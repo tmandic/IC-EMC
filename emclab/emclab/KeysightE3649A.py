@@ -5,16 +5,13 @@ from pprint import pprint
 
 from .GPIB import GPIB
 
-global adr
-global chan
-
 #===============================================================
 class KeysightE3649A(GPIB):
     """Voltage source Keysight E3649A.
 
     """
     #===============================================================
-    def __init__(self, adr):
+    def __init__(self, adr, fname):
         """Initialization.
 
         Input parameters
@@ -26,6 +23,7 @@ class KeysightE3649A(GPIB):
         self._dev = rm.open_resource('GPIB0::' + str(adr) + '::INSTR')
 
         self.adr = adr
+        self.fname = fname
 
         # reset: outputs are off
         self._reset()
@@ -38,18 +36,27 @@ class KeysightE3649A(GPIB):
         self.name = self._name()
 
     #===============================================================
-    def ret_val(self):
+    def get_adress(self):
+        """Get the device's adress.
+
+        """
         return self.adr
 
     #===============================================================
+    def get_channel(self):
+        """Get the device's channel.
 
+        """
+        return self.chan
+
+    #===============================================================
     def enable(self, channel, zero = True):
         """Enable channel.
 
         Input parameters
         ----------------
         channel: Which channel to select:
-        (1 or 'l' or 'left'; 2 or 'r' or 'right').
+        1 or 'l' or 'left'; 2 or 'r' or 'right'.
         """
         self._sel(channel)
         if zero:
@@ -63,13 +70,13 @@ class KeysightE3649A(GPIB):
         Input parameters
         ----------------
         channel: Which channel to select:
-        (1 or 'l' or 'left'; 2 or 'r' or 'right').
+        1 or 'l' or 'left'; 2 or 'r' or 'right'.
         """
         self._sel(channel)
         self._dev.write('OUTP OFF')
 
     #===============================================================
-    def set_both(self, channel, max_volt, max_curr):
+    def set_both(self, channel, volt, max_curr):
         """Set voltage or read voltage level.
 
            Set current or read current level.
@@ -78,36 +85,39 @@ class KeysightE3649A(GPIB):
         Input parameters
         ----------------
         channel: Which channel to select:
-        (1 or 'l' or 'left'; 2 or 'r' or 'right').
-        max_volt: Maximum voltage in volts [V].
+        1 or 'l' or 'left'; 2 or 'r' or 'right'.
+        volt: Voltage in volts [V].
         max_curr: Maximum current in ampers [A].
         """
         # select channel
         self._sel(channel)
 
-        self._set_param(channel, max_volt, max_curr)
+        U, I = self._set_param(channel, volt, max_curr)
+
+        return U, I
 
     #===============================================================
-    def voltage(self, channel, max_volt = None):
+    def voltage(self, channel, volt = None):
         """Set voltage or read voltage level.
 
         Input parameters
         ----------------
         channel: Which channel to select:
-        (1 or 'l' or 'left'; 2 or 'r' or 'right').
-        (optional) max_volt: Maximum voltage in volts [V].
+        1 or 'l' or 'left'; 2 or 'r' or 'right'.
+        (optional) volt: Voltage in volts [V].
 
         """
         # select channel
         self._sel(channel)
 
-        if max_volt is None:
+        if volt is None:
             U = float(self._dev.query('MEAS:VOLT?'))
-            print("\nThe measured voltage is: ", '%f' % U, "V.\n")
+            sentence = self.sent + "The measured voltage is: " + str(U) + "V.\n\n"
+            print(sentence)
+            self._write_sent(sentence)
             return U
         else:
-            max_curr = None
-            U = self._set_param(channel, max_volt, max_curr)
+            U, I = self._set_param(channel, volt=volt)
             return U
 
     #===============================================================
@@ -117,7 +127,7 @@ class KeysightE3649A(GPIB):
         Input parameters
         ----------------
         channel: Which channel to select:
-        (1 or 'l' or 'left'; 2 or 'r' or 'right').
+        1 or 'l' or 'left'; 2 or 'r' or 'right'.
         (optional) max_curr: Maximum current in ampers [V].
 
         """
@@ -126,11 +136,12 @@ class KeysightE3649A(GPIB):
 
         if max_curr is None:
             I = float(self._dev.query('MEAS:CURR?'))
-            print("\nThe measured current is: ", '%f' % I, "A.\n")
+            sentence = self.sent + "The measured current is: " + str(I) + "A.\n\n"
+            print(sentence)
+            self._write_sent(sentence)
             return I
         else:
-            max_volt = None
-            I = self._set_param(channel, max_volt, max_curr)
+            U, I = self._set_param(channel, max_curr)
             return I
 
     #===============================================================
@@ -140,7 +151,7 @@ class KeysightE3649A(GPIB):
         Input parameters
         ----------------
         channel: Which channel to select:
-        (1 or 'l' or 'left'; 2 or 'r' or 'right').
+        1 or 'l' or 'left'; 2 or 'r' or 'right'.
         (optional) rang: set the range to low or high
 
         """
@@ -158,11 +169,15 @@ class KeysightE3649A(GPIB):
                 raise ValueError("Please select 1 ('l'; 'low') or 2 ('h'; 'high').\n")
         out = self._dev.query('VOLT:RANG?')
         if out.startswith('P35V'):
-            print("Low range: 35V.\n")
+            sentence = self.sent + "Low range: 35V.\n\n"
+            print(sentence)
+            self._write_sent(sentence)
         elif out.startswith('P60V'):
-            print("High range: 60V.\n")
+            sentence = self.sent + "High range: 60V.\n\n"
+            print(sentence)
+            self._write_sent(sentence)
         else:
-            raise ValueError("Please select 1 ('l'; 'low') or 2 ('h'; 'high').\n")
+            raise ValueError("Wrong output from instrument.\n")
 
     #===============================================================
     def set_prot(self, channel, prot = None, state = None):
@@ -171,7 +186,7 @@ class KeysightE3649A(GPIB):
         Input parameters
         ----------------
         channel: Which channel to select:
-        (1 or 'l' or 'left'; 2 or 'r' or 'right').
+        1 or 'l' or 'left'; 2 or 'r' or 'right')
         (optional) prot: Set the voltage protection level in volts [V].
         (optional) state: Turn on overvoltage protection(1 or 'on') or
         turn off overvoltage protection(0 or 'off').
@@ -185,20 +200,30 @@ class KeysightE3649A(GPIB):
         else:
             self._dev.write('VOLT:PROT ', '%f' % prot)
         out = self._dev.query('VOLT:PROT?')
-        print("The overvoltage protection is set to:", out, "V.\n")
+        sentence = self.sent + "The overvoltage protection is set to:" + str(out) + "V.\n\n"
+        print(sentence)
+        self._write_sent(sentence)
 
         if state in [1, 'on']:
             self._dev.write('VOLT:PROT:STAT 1')
-            print("Overvoltage protection is on.\n")
+            sentence = self.sent + "Overvoltage protection is on.\n\n"
+            print(sentence)
+            self._write_sent(sentence)
         elif state in [0, 'off'] :
             self._dev.write('VOLT:PROT:STAT 0')
-            print("Overvoltage protection is off.\n")
+            sentence = self.sent + "Overvoltage protection is off.\n\n"
+            print(sentence)
+            self._write_sent(sentence)
         elif state == None:
             o = self._dev.query('VOLT:PROT:STAT?')
             if o.startswith('1'):
-                print("Overvoltage protection is on.\n")
+                sentence = self.sent + "Overvoltage protection is on.\n\n"
+                print(sentence)
+                self._write_sent(sentence)
             elif o.startswith('0'):
-                print("Overvoltage protection is off.\n")
+                sentence = self.sent + "Overvoltage protection is off.\n\n"
+                print(sentence)
+                self._write_sent(sentence)
             else:
                 raise ValueError("Please make a valid input\n.")
         else:
@@ -243,6 +268,7 @@ class KeysightE3649A(GPIB):
 
         """
         self._dev.write('*RST')
+        time.sleep(1)
 
     #===============================================================
     def _sel(self, channel):
@@ -251,33 +277,40 @@ class KeysightE3649A(GPIB):
         Input parameters
         ----------------
         channel: Which channel to select:
-        (1 or 'l' or 'left'; 2 or 'r' or 'right').
+        1 or 'l' or 'left'; 2 or 'r' or 'right'.
         """
+
+        self.chan = channel
+
+        self._timestamp()
+
+        timestamp = self.time
+
+        self.sent = "Time: " + timestamp + "\nAdress: " + str(self.adr) + "\nChannel: " + str(self.chan) + "\n"
 
         if channel in [1, 'l', 'left']:
             self._dev.write('INST:SEL OUT1')
         elif channel in [2, 'r', 'right']:
             self._dev.write('INST:SEL OUT2')
         else:
-            raise ValueError("Please select 1 ('l'; 'left') or 2 ('r'; 'right').")
+            raise ValueError("Please select 1 ('l'; 'left') or 2 ('r'; 'right').\n")
 
     #===============================================================
-    def _set_param(self, channel, max_volt, max_curr):
+    def _set_param(self, channel, volt = None, max_curr = None):
 
-        """Set maximum voltage and measure it.
+        """Set voltage limit and measure it.
 
         Input parameters
         ----------------
         channel: Which channel to select:
-        (1 or 'l' or 'left'; 2 or 'r' or 'right').
-        max_volt: Maximum voltage in volts [V].
+        1 or 'l' or 'left'; 2 or 'r' or 'right'.
+        volt: Voltage in volts [V].
         max_curr: Maximum current in ampers [A].
 
         """
-        time.sleep(3)
 
-        if max_volt is not None:
-            self._dev.write('VOLT ', '%f' % max_volt)
+        if volt is not None:
+            self._dev.write('VOLT ', '%f' % volt)
 
         if max_curr is not None:
             self._dev.write('CURR ', '%f' % max_curr)
@@ -285,6 +318,99 @@ class KeysightE3649A(GPIB):
         time.sleep(0.3)
 
         U = float(self._dev.query('MEAS:VOLT?'))
-        print("Voltage stabilized to ", U, "V.")
+        sentence = self.sent + "Voltage stabilized to " + str(U) + "V.\n\n"
+        print(sentence)
+        self._write_sent(sentence)
         I = float(self._dev.query('MEAS:CURR?'))
-        print("Current stabilized to ", I, "A.")
+        sentence = self.sent + "Current stabilized to " + str(I) +  "A.\n\n"
+        print(sentence)
+        self._write_sent(sentence)
+
+        return U, I
+
+    #===============================================================
+    def _write_sent(self, sentence):
+        """Write a sentence in a file.
+
+        Input parameters
+        ----------------
+        sentence: predetermined
+
+        """
+        with open(self.fname + ".txt", "a") as f:
+            f.write(sentence)
+
+    #===============================================================
+    def _timestamp(self):
+        """Creates a timestamp both in float and string format.
+
+
+        """
+        self.time_float = time.time()
+        t0 = time.asctime(time.localtime(self.time_float))
+        t1 = t0[4:]
+        t2=[]
+        for t in t1:
+            t2.append(t)
+        if t1.startswith('Jan'):
+            t3 = t2[4:]
+            t3.insert(0, '1')
+            t3.insert(0, '0')
+        elif t1.startswith('Feb'):
+            t3 = t2[4:]
+            t3.insert(0, '2')
+            t3.insert(0, '0')
+        elif t1.startswith('Mar'):
+            t3 = t2[4:]
+            t3.insert(0, '3')
+            t3.insert(0, '0')
+        elif t1.startswith('Apr'):
+            t3 = t2[4:]
+            t3.insert(0, '4')
+            t3.insert(0, '0')
+        elif t1.startswith('May'):
+            t3 = t2[4:]
+            t3.insert(0, '5')
+            t3.insert(0, '0')
+        elif t1.startswith('Jun'):
+            t3 = t2[4:]
+            t3.insert(0, '6')
+            t3.insert(0, '0')
+        elif t1.startswith('Jul'):
+            t3 = t2[4:]
+            t3.insert(0, '7')
+            t3.insert(0, '0')
+        elif t1.startswith('Aug'):
+            t3 = t2[4:]
+            t3.insert(0, '8')
+            t3.insert(0, '0')
+        elif t1.startswith('Sep'):
+            t3 = t2[4:]
+            t3.insert(0, '9')
+            t3.insert(0, '0')
+        elif t1.startswith('Oct'):
+            t3 = t2[4:]
+            t3.insert(0, '0')
+            t3.insert(0, '1')
+        elif t1.startswith('Nov'):
+            t3 = t2[4:]
+            t3.insert(0, '1')
+            t3.insert(0, '1')
+        elif t1.startswith('Dec'):
+            t3 = t2[4:]
+            t3.insert(0, '2')
+            t3.insert(0, '1')
+        else:
+            raise ValueError("Wrong date\n")
+        for i in range(2):
+            t3.remove(' ')
+        for i in [2, 5, 14]:
+            t3.insert(i, '_')
+        day = t3[3:6]
+        month = t3[0:3]
+        year = t3[15:19]
+        handm = t3[5:11]
+        t4 = day + month + year + handm
+        timestr=''.join(t4)
+        self.time = timestr
+        return timestr

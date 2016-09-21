@@ -1,4 +1,4 @@
 # -*- coding: utf-8 -*-
 from .KeysightE3649A import KeysightE3649A
-from .KeysightE3649A_b import KeysightE3649A_b
+from .Keysight34410A import Keysight34410A
 from .functions import *
