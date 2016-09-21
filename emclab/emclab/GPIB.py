@@ -8,7 +8,7 @@ class GPIB(object):
 
     #===============================================================
     def __init__(self):
-        """Initialization.
+        """Initialization function.
 
         """
         raise NotImplementedError
