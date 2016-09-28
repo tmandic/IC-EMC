@@ -627,11 +627,12 @@ class HP4145B(GPIB):
         if sourcefunction == None:
             sourcefunction = input("Enter the source function: ")
         self.sourcefunction = sourcefunction
+        print(sourcefunction)
         if sourcefunction in [1, "1", "VAR1", "var1"]:
             sourcefunction = 1
         elif sourcefunction in [2, "2", "VAR2", "var2"]:
             sourcefunction = 2
-        elif sourcefunction in [3, "3", "VAR3", "var3"]:
+        elif sourcefunction in [3, "3", "CONST", "const"]:
             sourcefunction = 3
         elif sourcefunction in [4, "4", "VAR1'", "var1'"]:
             sourcefunction = 4
