@@ -5,33 +5,32 @@ from pprint import pprint
 
 from .GPIB import GPIB
 
-
 #===============================================================
 class Keysight34410A(GPIB):
     """Digit multimeter Keysight 34410A.
 
     """
     #===============================================================
-    def __init__(self, adr):
+    def __init__(self, addr):
         """Initialization.
 
         """
         rm = visa.ResourceManager()
-        self._dev = rm.open_resource('GPIB0::' + str(adr) + '::INSTR')
+        self._dev = rm.open_resource('GPIB0::' + str(addr) + '::INSTR')
 
-        # get instrument adress
+        # get instrument address
 
-        self.adr = adr
+        self.addr = addr
 
         # get instrument name
         self.name = self._name()
 
     #===============================================================
-    def get_adress(self):
-        """Get the device's adress.
+    def get_address(self):
+        """Get the device's address.
 
         """
-        return self.adr
+        return self.addr
 
     #===============================================================
     def get_volt(self, acdc = None):
@@ -415,10 +414,13 @@ class Keysight34410A(GPIB):
 
         if a == 0:
             print("The input impedance is: 10Mohm.\n")
+            output = '10M'
         elif a == 1:
             print("The input impedance status is: Hi-Z.\n")
+            output = 'Hi-Z'
         else:
             raise ValueError("Error")
+        return output
 
     #===============================================================
     def remove_error(self):
@@ -426,6 +428,13 @@ class Keysight34410A(GPIB):
 
         """
         self._dev.query('SYS:ERR?')
+
+    #===============================================================
+    def remove_errors(self):
+        """Remove all errors.
+
+        """
+        self._dev.write('*CLS')
 
     #===============================================================
     # PRIVATE METHODS
