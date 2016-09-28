@@ -7,19 +7,36 @@ def set_all():
 
     itera = iterations()
 
-    inst1, dev1 = init_dev(1, fnam)
-    inst2, dev2 = init_dev(2, fnam)
-    inst3, dev3 = init_dev(3, fnam)
+    inst1 = init_dev(1, fnam)
+    inst2 = init_dev(2, fnam)
+    inst3 = init_dev(3, fnam)
 
-    set_volt(inst1, dev1)
-    set_volt(inst2, dev2)
-    set_volt(inst3, dev3)
+    set_volt(inst1)
+    set_volt(inst2)
+    set_volt(inst3)
 
-    matrix1 = meas_volt(inst1, dev1, itera)
-    matrix2 = meas_volt(inst2, dev2, itera, matrix1)
-    matrix3 = meas_volt(inst3, dev3, itera, matrix2)
+    matrix1 = meas_volt(inst1, itera)
+    matrix2 = meas_volt(inst2, itera, matrix1)
+    matrix3 = meas_volt(inst3, itera, matrix2)
 
     data = make_data_matrix(matrix3)
+
+    print("x")
+    inst2.voltage()
+    print("x")
+    inst3.voltage()
+    print("x")
+    inst1.voltage()
+    print("x")
+    print(inst1.addr)
+    print("x")
+    print(inst3.addr)
+    print("x")
+    print(inst2.chan)
+    print("x")
+    print(inst3.chan)
+    print("x")
+
     return data
 
 def enter_fname():
@@ -34,30 +51,22 @@ def init_dev(dev = None, fnam = None):
     if dev == None:
         dev = int(input("1 - VDD\n2 - AVDD\n3 - VREF\n"))
     if dev == 1:
-        adress = 5
-        inst = KeysightE3649A(adress, fname)
+        inst = KeysightE3649A(5, 1, fname)
     elif dev == 2:
-        adress = 5
-        inst = KeysightE3649A(adress, fname)
+        inst = KeysightE3649A(5, 2, fname)
     elif dev == 3:
-        adress = 6
-        inst = KeysightE3649A(adress, fname)
+        inst = KeysightE3649A(6, 1, fname)
     else:
         raise ValueError("Please enter a valid input\n")
-    return inst, dev
+    return inst
 
-def set_volt(inst, dev = None):
-    if dev == None:
-        dev = int(input("1 - VDD\n2 - AVDD\n3 - VREF\n"))
-    if dev == 1:
-        channel = 1
-        inst.set_both(1, 3.3, 0.4)
-    elif dev == 2:
-        channel = 2
-        inst.set_both(2, 3.3, 0.4)
-    elif dev == 3:
-        channel = 1
-        inst.set_both(1, 1.2, 0.3)
+def set_volt(inst):
+    if (inst.addr == 5) and (inst.chan == 1):
+        inst.set_both(3.3, 0.4)
+    elif (inst.addr == 5) and (inst.chan == 2):
+        inst.set_both(3.3, 0.4)
+    elif (inst.addr == 6) and (inst.chan == 1):
+        inst.set_both(1.2, 0.3)
     else:
         raise ValueError("Please enter a valid input\n")
 
@@ -65,7 +74,7 @@ def iterations():
     itera = int(input("Number of iterations: "))
     return itera
 
-def meas_volt(inst, dev, itera, input_matrix = None):
+def meas_volt(inst, itera, input_matrix = None):
     if input_matrix == None:
         iterat = itera
         matrix = np.zeros((int(iterat), 13))
@@ -75,20 +84,17 @@ def meas_volt(inst, dev, itera, input_matrix = None):
 
 ##    matrix = matrix.astype('|S16')
 
-    if dev == 1:
+    if (inst.addr == 5) and (inst.chan == 1):
         column = 2
-        channel = 1
-    elif dev == 2:
+    elif (inst.addr == 5) and (inst.chan == 2):
         column = 0
-        channel = 2
-    elif dev == 3:
+    elif (inst.addr == 6) and (inst.chan == 1):
         column = 4
-        channel = 1
     else:
         raise ValueError("Please enter a valid input\n")
 
     for i in range(int(iterat)):
-        matrix[:, column] = inst.voltage(channel)
+        matrix[:, column] = inst.voltage()
         matrix[:, 12] = inst.time_float
     return matrix
 
