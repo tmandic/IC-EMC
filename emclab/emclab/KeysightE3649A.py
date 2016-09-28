@@ -11,60 +11,66 @@ class KeysightE3649A(GPIB):
 
     """
     #===============================================================
-    def __init__(self, adr, fname):
+    def __init__(self, addr, channel, fname = None):
         """Initialization.
 
         Input parameters
         ----------------
-        adr: what adress to select
-
+        addr: what address to select
+        channel: Which channel to select:
+        1 or 'l' or 'left'; 2 or 'r' or 'right'.
+        fname: name of the file where the output data will be written
         """
         rm = visa.ResourceManager()
-        self._dev = rm.open_resource('GPIB0::' + str(adr) + '::INSTR')
+        self._dev = rm.open_resource('GPIB0::' + str(addr) + '::INSTR')
 
-        self.adr = adr
+        self.addr = addr
         self.fname = fname
+        self.chan = channel
 
         # reset: outputs are off
         self._reset()
 
-        # enable channels 1, 2
-        self.enable(1)
-        self.enable(2)
+        # enable channel
+        self.enable()
 
         # get instrument name
         self.name = self._name()
 
     #===============================================================
-    def get_adress(self):
-        """Get the device's adress.
+    def get_address(self):
+        """Get the device's address.
+
+        Returns the device's address.
 
         """
-        return self.adr
+        return self.addr
 
     #===============================================================
     def get_channel(self):
         """Get the device's channel.
 
+        Returns the device's channel.
+
         """
         return self.chan
 
     #===============================================================
-    def enable(self, channel, zero = True):
+    def enable(self, zero = True):
         """Enable channel.
 
         Input parameters
         ----------------
-        channel: Which channel to select:
-        1 or 'l' or 'left'; 2 or 'r' or 'right'.
+        zero: default value is True
         """
-        self._sel(channel)
+        # select channel
+        self._sel()
         if zero:
-            self._set_param(channel, 0, 0)
+            self._set_param(0, 0)
         self._dev.write('OUTP ON')
 
     #===============================================================
-    def disable(self, channel):
+    def disable(self):
         """Disable channel.
 
         Input parameters
@@ -72,33 +78,33 @@ class KeysightE3649A(GPIB):
         channel: Which channel to select:
         1 or 'l' or 'left'; 2 or 'r' or 'right'.
         """
-        self._sel(channel)
         self._dev.write('OUTP OFF')
 
     #===============================================================
-    def set_both(self, channel, volt, max_curr):
+    def set_both(self, volt, max_curr):
         """Set voltage or read voltage level.
 
            Set current or read current level.
 
+           Returns the measured voltage and current.
 
         Input parameters
         ----------------
-        channel: Which channel to select:
-        1 or 'l' or 'left'; 2 or 'r' or 'right'.
         volt: Voltage in volts [V].
         max_curr: Maximum current in ampers [A].
         """
         # select channel
-        self._sel(channel)
+        self._sel()
 
-        U, I = self._set_param(channel, volt, max_curr)
+        U, I = self._set_param(volt, max_curr)
 
         return U, I
 
     #===============================================================
-    def voltage(self, channel, volt = None):
+    def voltage(self, volt = None):
         """Set voltage or read voltage level.
+
+           Returns the measured voltage.
 
         Input parameters
         ----------------
@@ -108,21 +114,23 @@ class KeysightE3649A(GPIB):
 
         """
         # select channel
-        self._sel(channel)
+        self._sel()
 
         if volt is None:
             U = float(self._dev.query('MEAS:VOLT?'))
-            sentence = self.sent + "The measured voltage is: " + str(U) + "V.\n\n"
+            sentence = self._sent + "The measured voltage is: " + str(U) + "V.\n\n"
             print(sentence)
             self._write_sent(sentence)
             return U
         else:
-            U, I = self._set_param(channel, volt=volt)
+            U, I = self._set_param(volt = volt)
             return U
 
     #===============================================================
-    def current(self, channel, max_curr = None):
+    def current(self, max_curr = None):
         """Set current limit or read current level.
+
+           Returns the measured current.
 
         Input parameters
         ----------------
@@ -132,32 +140,25 @@ class KeysightE3649A(GPIB):
 
         """
         # select channel
-        self._sel(channel)
+        self._sel()
 
         if max_curr is None:
             I = float(self._dev.query('MEAS:CURR?'))
-            sentence = self.sent + "The measured current is: " + str(I) + "A.\n\n"
+            sentence = self._sent + "The measured current is: " + str(I) + "A.\n\n"
             print(sentence)
             self._write_sent(sentence)
             return I
         else:
-            U, I = self._set_param(channel, max_curr)
+            U, I = self._set_param(max_curr = max_curr)
             return I
 
     #===============================================================
-    def set_range(self, channel, rang = None):
+    def set_range(self, rang = None):
         """Set the range to low or high.
-
-        Input parameters
-        ----------------
-        channel: Which channel to select:
-        1 or 'l' or 'left'; 2 or 'r' or 'right'.
-        (optional) rang: set the range to low or high
 
         """
         # select channel
-        self._sel(channel)
-
+        self._sel()
         if rang is None:
             pass
         else:
@@ -169,59 +170,59 @@ class KeysightE3649A(GPIB):
                 raise ValueError("Please select 1 ('l'; 'low') or 2 ('h'; 'high').\n")
         out = self._dev.query('VOLT:RANG?')
         if out.startswith('P35V'):
-            sentence = self.sent + "Low range: 35V.\n\n"
+            sentence = self._sent + "Low range: 35V.\n\n"
             print(sentence)
             self._write_sent(sentence)
         elif out.startswith('P60V'):
-            sentence = self.sent + "High range: 60V.\n\n"
+            sentence = self._sent + "High range: 60V.\n\n"
             print(sentence)
             self._write_sent(sentence)
         else:
             raise ValueError("Wrong output from instrument.\n")
 
     #===============================================================
-    def set_prot(self, channel, prot = None, state = None):
+    def set_prot(self, prot = None, state = None):
         """Set the voltage level at which the overvoltage protection (OVP) circuit will trip.
 
         Input parameters
         ----------------
-        channel: Which channel to select:
-        1 or 'l' or 'left'; 2 or 'r' or 'right')
         (optional) prot: Set the voltage protection level in volts [V].
         (optional) state: Turn on overvoltage protection(1 or 'on') or
         turn off overvoltage protection(0 or 'off').
 
         """
         # select channel
-        self._sel(channel)
+        self._sel()
 
         if prot is None:
             pass
         else:
+            if prot < 1 or prot > 66:
+                raise ValueError("prot should be between 1 V and 66 V.")
             self._dev.write('VOLT:PROT ', '%f' % prot)
         out = self._dev.query('VOLT:PROT?')
-        sentence = self.sent + "The overvoltage protection is set to:" + str(out) + "V.\n\n"
+        sentence = self._sent + "The overvoltage protection is set to:" + str(out) + "V.\n\n"
         print(sentence)
         self._write_sent(sentence)
 
         if state in [1, 'on']:
             self._dev.write('VOLT:PROT:STAT 1')
-            sentence = self.sent + "Overvoltage protection is on.\n\n"
+            sentence = self._sent + "Overvoltage protection is on.\n\n"
             print(sentence)
             self._write_sent(sentence)
         elif state in [0, 'off'] :
             self._dev.write('VOLT:PROT:STAT 0')
-            sentence = self.sent + "Overvoltage protection is off.\n\n"
+            sentence = self._sent + "Overvoltage protection is off.\n\n"
             print(sentence)
             self._write_sent(sentence)
         elif state == None:
             o = self._dev.query('VOLT:PROT:STAT?')
             if o.startswith('1'):
-                sentence = self.sent + "Overvoltage protection is on.\n\n"
+                sentence = self._sent + "Overvoltage protection is on.\n\n"
                 print(sentence)
                 self._write_sent(sentence)
             elif o.startswith('0'):
-                sentence = self.sent + "Overvoltage protection is off.\n\n"
+                sentence = self._sent + "Overvoltage protection is off.\n\n"
                 print(sentence)
                 self._write_sent(sentence)
             else:
@@ -263,66 +264,70 @@ class KeysightE3649A(GPIB):
         return name
 
     #===============================================================
-    def _reset(self):
+    def _reset(self, sleeptime = 1):
         """Reset device.
 
-        """
-        self._dev.write('*RST')
-        time.sleep(1)
-
-    #===============================================================
-    def _sel(self, channel):
-        """Select channel.
+           Returns the sleeptime.
 
         Input parameters
         ----------------
-        channel: Which channel to select:
-        1 or 'l' or 'left'; 2 or 'r' or 'right'.
-        """
+        sleeptime: sleep time in seconds
+        (if nothing is entered, the default sleeptime is 1s)
 
-        self.chan = channel
+        """
+        self._dev.write('*RST')
+        time.sleep(sleeptime)
+        return sleeptime
+
+    #===============================================================
+    def _sel(self):
+        """Select channel.
+
+        """
 
         self._timestamp()
 
-        timestamp = self.time
+        self._sent = "Time: " + str(self.time) + "\nAddress: " + str(self.addr) + \
+                     "\nChannel: " + str(self.chan) + "\n"
 
-        self.sent = "Time: " + timestamp + "\nAdress: " + str(self.adr) + "\nChannel: " + str(self.chan) + "\n"
-
-        if channel in [1, 'l', 'left']:
+        if self.chan in [1, 'l', 'left']:
+            self.chan = 1
             self._dev.write('INST:SEL OUT1')
-        elif channel in [2, 'r', 'right']:
+        elif self.chan in [2, 'r', 'right']:
+            self.chan = 2
             self._dev.write('INST:SEL OUT2')
         else:
             raise ValueError("Please select 1 ('l'; 'left') or 2 ('r'; 'right').\n")
 
     #===============================================================
-    def _set_param(self, channel, volt = None, max_curr = None):
+    def _set_param(self, volt = None, max_curr = None, sleeptime = 0.3):
 
         """Set voltage limit and measure it.
 
+           Returns the measured voltage and current.
+
         Input parameters
-        ----------------
-        channel: Which channel to select:
-        1 or 'l' or 'left'; 2 or 'r' or 'right'.
+        ----------------.
         volt: Voltage in volts [V].
         max_curr: Maximum current in ampers [A].
+        sleeptime: sleep time in seconds
+        (if nothing is entered, the default sleeptime is 0.3s)
 
         """
-
         if volt is not None:
             self._dev.write('VOLT ', '%f' % volt)
 
         if max_curr is not None:
             self._dev.write('CURR ', '%f' % max_curr)
 
-        time.sleep(0.3)
+        time.sleep(sleeptime)
 
         U = float(self._dev.query('MEAS:VOLT?'))
-        sentence = self.sent + "Voltage stabilized to " + str(U) + "V.\n\n"
+        sentence = self._sent + "Voltage stabilized to " + str(U) + "V.\n\n"
         print(sentence)
         self._write_sent(sentence)
         I = float(self._dev.query('MEAS:CURR?'))
-        sentence = self.sent + "Current stabilized to " + str(I) +  "A.\n\n"
+        sentence = self._sent + "Current stabilized to " + str(I) +  "A.\n\n"
         print(sentence)
         self._write_sent(sentence)
 
@@ -344,6 +349,7 @@ class KeysightE3649A(GPIB):
     def _timestamp(self):
         """Creates a timestamp both in float and string format.
 
+           Returns the created timestamp.
 
         """
         self.time_float = time.time()
