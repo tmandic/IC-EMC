@@ -166,7 +166,6 @@ class DataCollector(object):
         lista_timestamp_s.append(meas.time)
 
         self.data.clear()
-        print(self.data)
 
         self.data['AVDD'] = lista_avdd
         self.data['I_AVDD'] = lista_i_avdd
