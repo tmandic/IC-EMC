@@ -6,10 +6,9 @@ def open_channels(list_of_params):
     hp = HP4145B(**params)
     for i in range(1, 5):
         hp.turn_off_chan(cd = 'smu', channum = i)
-    for i in range(1, 3):
-        hp.turn_off_chan(cd = 'vs', channum = i)
-    for i in range(1, 3):
-        hp.turn_off_chan(cd = 'vm', channum = i)
+        if i in [1,2]:
+            hp.turn_off_chan(cd = 'vs', channum = i)
+            hp.turn_off_chan(cd = 'vm', channum = i)
 
     # define all channels
     hps = list()
@@ -23,3 +22,46 @@ def source_setup(list_of_hps, list_of_params):
     # set up all channels
     for hp, params_hp in zip(list_of_hps, list_of_params):
         hp.source_setup(**params_hp)
+
+def list_setup(list_of_hps):
+    hp0 = list_of_hps[0]
+    sent = "SM DM2 LI "
+    lista = list()
+    for hp in list_of_hps:
+        comma = ','
+        if hp == list_of_hps[-1]:
+            comma = ''
+        if hp.sourcemode_ss in [1, "1", "v", "V"]:
+            sent = sent + "'" + hp.iname + "'" + comma
+            lista.append(hp.iname)
+        elif hp.sourcemode_ss in [2, "2", "i", "I"]:
+            sent = sent + "'" + hp.vname + "'" + comma
+            lista.append(hp.vname)
+        else:
+            raise ValueError("Wrong input\n")
+
+    hp0._dev.write(str(sent))
+    print("Monitor channels:\n{}".format(str(lista).replace('[', '').replace(']', '')))
+
+def meas_setup(list_of_hps, interval = None, nureadings = None, wait = None):
+    hp0 = list_of_hps[0]
+    if wait == None:
+        wait = 0
+    hp0._dev.write("SM WT {}".format(wait))
+    hp0._dev.write("SM IN {}".format(interval))
+    hp0._dev.write("SM NR {}".format(nureadings))
+    for hp in list_of_hps:
+        hp.wait = wait
+        hp.interval = interval
+        hp.nureadings = nureadings
+    print("Measurement has been set up with the following settings:")
+    print("Wait time: {} s\nInterval time: {} s\nNumber of readings: {}\n".format(wait, interval, nureadings))
+
+def measure(list_of_hps, mode):
+    hp0 = list_of_hps[0]
+    hp0.measure(mode)
+    meas = dict()
+    for hp in list_of_hps:
+        meas[hp.param] = hp.get_res()
+    print(meas)
+    return meas

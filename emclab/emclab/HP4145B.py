@@ -246,11 +246,11 @@ class HP4145B(GPIB):
         if self.compval != None:
             print("Compliance value: {}".format(self.compval))
 
-    #===============================================================
-    def measure(self, me = None, param = None):
-        """Set the integration time.
+        print("\n")
 
-        Returns output.
+    #===============================================================
+    def measure(self, me = None):
+        """Set the integration time.
 
         Input parameters
         ----------------
@@ -282,35 +282,59 @@ class HP4145B(GPIB):
         else:
             raise ValueError("Wrong input\n")
 
-        if param == None:
-            if self.iname == None:
-                param = self.vname
-            elif self.iname != None:
-                param = input("Type in one of the channel names you want to measure:\n 1 - {} or 2 - {}\n".format(self.vname, self.iname))
-            else:
-                raise ValueError("Error\n")
-
-        if param in [1, '1', self.vname]:
+        if self.iname == None:
             param = self.vname
-        elif param in [2, '2', self.iname]:
-            if self.iname == None:
-                raise ValueError("The current name is None\n")
-            param = self.iname
+        elif self.iname != None:
+            if self.sourcemode_ss in [1, "1", "v", "V"]:
+                param = self.iname
+            elif self.sourcemode_ss in [2, "2", "i", "I"]:
+                param = self.vname
         else:
-            raise ValueError("Wrong input.\n")
+            raise ValueError("Error\n")
 
+        self.param = param
 
         print("Measuring of {} started in mode: {}\n".format(param, me_a))
 
-        output = self._dev.query("MD ME{}\r\n".format(me))
+        self._dev.write("MD ME{}".format(me))
 
-        A = self._dev.query("SPOLL({})\r\n".format(output))
-        while self._dev.query("BIT ({},0)\r\n".format(A)) == 0:
-            A = self._dev.query("SPOLL({})\r\n".format(output))
+        ts = self.nureadings*self.interval + self.wait + 1
 
-        output = self._dev.query("DO '{}'\r\n".format(param))
+        time.sleep(ts)
 
-        return output
+        print("Measuring done.\n")
+
+    #===============================================================
+    def get_res(self):
+        """Get the result of the measuring.
+
+        Returns measurement.
+
+        """
+
+        if self.iname == None:
+            param = self.vname
+        elif self.iname != None:
+            if self.sourcemode_ss in [1, "1", "v", "V"]:
+                param = self.iname
+            elif self.sourcemode_ss in [2, "2", "i", "I"]:
+                param = self.vname
+        else:
+            raise ValueError("Error\n")
+
+        self.param = param
+
+        self._dev.write("DO '{}'".format(self.param))
+
+        string = self._dev.query("ENTER")
+
+        string = string.replace('N', '').replace(' ', '').replace('C', '')
+
+        out = [float(s) for s in string.split(',')]
+
+        print("The measurement of {} gave the following results:\n{}\n".format(self.param, out))
+
+        return out
 
     #===============================================================
     def turn_off_chan(self, cd = None, channum = None):
@@ -331,11 +355,11 @@ class HP4145B(GPIB):
             raise ValueError("Wrong input\n")
 
         if cd in ['SMU', 'smu', '1', 1]:
-            self._dev.write("DE CH{}\r\n".format(channum))
+            self._dev.write("DE CH{}".format(channum))
         elif cd in ['VS', 'Vs', 'vs', '2', 2]:
-            self._dev.write("DE VS{}\r\n".format(channum))
+            self._dev.write("DE VS{}".format(channum))
         elif cd in ['VM', 'Vm', 'vm', '3', 3]:
-            self._dev.write("DE VM{}\r\n".format(channum))
+            self._dev.write("DE VM{}".format(channum))
         else:
             raise ValueError("Wrong input.\n")
 
@@ -365,14 +389,11 @@ class HP4145B(GPIB):
         default: 0 - OFF
 
         """
+        time.sleep(2)
         self.integration_time(it = it)
-        time.sleep(1)
         self.calibration(ca = ca)
-        time.sleep(1)
         self.data_ready(dr = dr)
-        time.sleep(1)
         self.buffer_clear()
-        time.sleep(1)
 
         print("Started the device.\n")
 
@@ -405,7 +426,7 @@ class HP4145B(GPIB):
         else:
             raise ValueError("Wrong input\n")
 
-        self._dev.write("IT{}\r\n".format(it))
+        self._dev.write("IT{}".format(it))
         print("Integration time has been set to mode: {}\n".format(it_a))
 
     #===============================================================
@@ -431,7 +452,7 @@ class HP4145B(GPIB):
         else:
             raise ValueError("Wrong input\n")
 
-        self._dev.write("CA{}\r\n".format(ca))
+        self._dev.write("CA{}".format(ca))
         print("Auto calibration is {}\n".format(ca_a))
 
     #===============================================================
@@ -455,14 +476,14 @@ class HP4145B(GPIB):
         else:
             raise ValueError("Wrong input\n")
 
-        self._dev.write("DR{}\r\n".format(dr))
+        self._dev.write("DR{}".format(dr))
 
     #===============================================================
     def buffer_clear(self):
         """Clears the data output buffer.
 
         """
-        self._dev.write("BC\r\n")
+        self._dev.write("BC")
         print("Data output buffer cleared.\n")
 
     #===============================================================
@@ -576,9 +597,7 @@ class HP4145B(GPIB):
             if sourcefunction != 3:
                 raise ValueError("If source mode is set to COM, the source function must be se to CONST\n")
 
-        print("DE CH{},'{}','{}',{},{}\r\n".format(channum, self.vname, self.iname, sourcemode, sourcefunction))
-
-        self._dev.write("DE CH{},'{}','{}',{},{}\r\n".format(channum, self.vname, self.iname, sourcemode, sourcefunction))
+        self._dev.write("DE CH{},'{}','{}',{},{}".format(channum, self.vname, self.iname, sourcemode, sourcefunction))
 
     #===============================================================
     def _vs_def(self, channum = None, vname = None, sourcefunction = None):
@@ -639,9 +658,7 @@ class HP4145B(GPIB):
         else:
             raise ValueError("Wrong input\n")
 
-        print("DE VS{},'{}',{}\r\n".format(channum, self.vname, sourcefunction))
-
-        self._dev.write("DE VS{},'{}',{}\r\n".format(channum, self.vname, sourcefunction))
+        self._dev.write("DE VS{},'{}',{}".format(channum, self.vname, sourcefunction))
 
     #===============================================================
     def _vm_def(self, channum = None, vname = None):
@@ -687,9 +704,7 @@ class HP4145B(GPIB):
             raise ValueError("The voltage name is too long\n")
         self.vname = vname.upper()
 
-        print("DE VM{},'{}'\r\n".format(channum, self.vname))
-
-        self._dev.write("DE VM{},'{}'\r\n".format(channum, self.vname))
+        self._dev.write("DE VM{},'{}'".format(channum, self.vname))
 
     #===============================================================
     def _source_setup_var1(self, sourcemode = None, sweepmode = None, startval = None, stopval = None, stepval = None, compval = None):
@@ -777,11 +792,9 @@ class HP4145B(GPIB):
         self.compval = compval
 
         if sweepmode == 1:
-            print("SS {}{},{},{},{},{}\r\n".format(sourcemode, sweepmode, startval, stopval, stepval, compval))
-            self._dev.write("SS {}{},{},{},{},{}\r\n".format(sourcemode, sweepmode, startval, stopval, stepval, compval))
+            self._dev.write("SS {}{},{},{},{},{}".format(sourcemode, sweepmode, startval, stopval, stepval, compval))
         elif sweepmode in [2,3,4]:
-            print("SS {}{},{},{},{}\r\n".format(sourcemode, sweepmode, startval, stopval, compval))
-            self._dev.write("SS {}{},{},{},{}\r\n".format(sourcemode, sweepmode, startval, stopval, compval))
+            self._dev.write("SS {}{},{},{},{}".format(sourcemode, sweepmode, startval, stopval, compval))
         else:
             raise ValueError("Wrong input for sweepmode.\n")
 
@@ -854,8 +867,7 @@ class HP4145B(GPIB):
             compval = float(input("Enter compliance value: "))
         self.compval = compval
 
-        print("SS {} {},{},{},{}\r\n".format(sourcemode, startval, stepval, nusteps, compval))
-        self._dev.write("SS {} {},{},{},{}\r\n".format(sourcemode, startval, stepval, nusteps, compval))
+        self._dev.write("SS {} {},{},{},{}".format(sourcemode, startval, stepval, nusteps, compval))
 
     #===============================================================
     def _source_setup_const_smu(self, sourcemode = None, compval = None, outval = None):
@@ -918,8 +930,7 @@ class HP4145B(GPIB):
             outval = float(input("Enter output value: "))
         self.outval = outval
 
-        print("SS {}{},{},{}\r\n".format(sourcemode, self.channum, outval, compval))
-        self._dev.write("SS {}{},{},{}\r\n".format(sourcemode, self.channum, outval, compval))
+        self._dev.write("SS {}{},{},{}".format(sourcemode, self.channum, outval, compval))
 
     #===============================================================
     def _source_setup_const_vs(self, outval = None):
@@ -954,8 +965,7 @@ class HP4145B(GPIB):
             outval = float(input("Enter output value: "))
         self.outval = outval
 
-        print(("SS SC{},{}\r\n".format(self.channum, outval)))
-        self._dev.write("SS SC{},{}\r\n".format(self.channum, outval))
+        self._dev.write("SS SC{},{}".format(self.channum, outval))
 
     #===============================================================
     def _reset(self, sleeptime = 1):
