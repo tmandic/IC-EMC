@@ -328,9 +328,11 @@ class HP4145B(GPIB):
 
         string = self._dev.query("ENTER")
 
-        string = string.replace('N', '').replace(' ', '').replace('C', '')
+##        string = string.replace('N', '').replace(' ', '').replace('C', '')
+##        print(string)
+##        out = [float(s) for s in string.split(',')]
 
-        out = [float(s) for s in string.split(',')]
+        out = self._format_res(string)
 
         print("The measurement of {} gave the following results:\n{}\n".format(self.param, out))
 
@@ -966,6 +968,68 @@ class HP4145B(GPIB):
         self.outval = outval
 
         self._dev.write("SS SC{},{}".format(self.channum, outval))
+
+    #===============================================================
+    def _format_res(self, string = None):
+        """Turn of a channel.
+
+        Returns formated output.
+
+        Input parameters
+        ----------------
+        string: output result
+
+        """
+        res = dict()
+        lista = list()
+        listn = list()
+        listl = list()
+        listv = list()
+        listx = list()
+        listc = list()
+        listt = list()
+        for s in string:
+            lista.clear()
+            while s != ',':
+                if s == 'N':
+                    lista.append(s)
+                    lista = ''.join(lista)
+                    lista = lista.replace('N', '').replace(' ', '')
+                    listn.append(float(lista))
+                elif s == 'L':
+                    lista.append(s)
+                    lista = ''.join(lista)
+                    lista = lista.replace('L', '').replace(' ', '')
+                    listl.append(float(lista))
+                elif s == 'V':
+                    lista.append(s)
+                    lista = ''.join(lista)
+                    lista = lista.replace('V', '').replace(' ', '')
+                    listv.append(float(lista))
+                elif s == 'X':
+                    lista.append(s)
+                    lista = ''.join(lista)
+                    lista = lista.replace('X', '').replace(' ', '')
+                    listx.append(float(lista))
+                elif s == 'C':
+                    lista.append(s)
+                    lista = ''.join(lista)
+                    lista = lista.replace('C', '').replace(' ', '')
+                    listc.append(float(lista))
+                elif s == 'T':
+                    lista.append(s)
+                    lista = ''.join(lista)
+                    lista = lista.replace('T', '').replace(' ', '')
+                    listt.append(float(lista))
+
+        res['N'] = listn
+        res['L'] = listl
+        res['V'] = listv
+        res['X'] = listx
+        res['C'] = listc
+        res['T'] = listt
+
+        return res
 
     #===============================================================
     def _reset(self, sleeptime = 1):
