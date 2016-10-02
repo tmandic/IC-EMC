@@ -1,4 +1,5 @@
 import numpy as np
+import os
 import time
 
 #===============================================================
@@ -6,180 +7,105 @@ class DataCollector(object):
     """Data Collector.
 
     """
+
+    # index connecting parameters to matrix columns
+    index = {
+        'AVDD'          : 0,
+        'I_AVDD'        : 1,
+        'VDD'           : 2,
+        'I_VDD'         : 3,
+        'VREF'          : 4,
+        'I_REF'         : 5,
+        'V_IREF'        : 6,
+        'IB'            : 7,
+        'RON'           : 8,
+        'PD'            : 9,
+        'TEMP'          : 10,
+        'FREQ'          : 11,
+        'PSRR'          : 12,
+        'PHASE_NOISE'   : 13,
+        'TIMESTAMP'     : 14,
+        'ADDING_TIME'   : 15,
+    }
+
+    # define header
+    header = 'AVDD [V],' + \
+             'I_AVDD [A],' + \
+             'VDD [V],' + \
+             'I_VDD [A],' + \
+             'VREF [V],' + \
+             'I_REF [A],' + \
+             'V_IREF [V],' + \
+             'IB [A],' + \
+             'RON [V],' + \
+             'PD [V],' + \
+             'TEMP [C],' + \
+             'FREQ [Hz],' + \
+             'PSRR [Hz/V],' + \
+             'PHASE_NOISE,' + \
+             'TIMESTAMP [sse],' + \
+             'ADDING_TIME [s]'
+
     #===============================================================
     def __init__(self):
-        """Initialization. Creates a dictionary.
+        """Initialization.
 
         """
-        self.data = dict()
+
+        ncol = len(self.index)
+        self.matrix = np.array([]).reshape(0, ncol)
 
     #===============================================================
     def add(self, meas):
-        """Add content to the dictionary.
+        """Add new measurement to the matrix.
 
         Input parameters
         ----------------
-        meas: add a measurement to the dictionary
-
+        meas: a Measurement object.
         """
-        lista_avdd = list()
-        lista_i_avdd = list()
-        lista_vdd = list()
-        lista_i_vdd = list()
-        lista_vref = list()
-        lista_i_ref = list()
-        lista_i_b = list()
-        lista_ron = list()
-        lista_temp = list()
-        lista_freq = list()
-        lista_pssr = list()
-        lista_phase_noise = list()
-        lista_timestamp = list()
-        lista_timestamp_s = list()
 
-        print("\nPOCETAK\n")
+        new_data = np.zeros(len(self.index))
 
-        for key, value in self.data.items():
-            if key == 'AVDD':
-                if self.data['AVDD'] != []:
-                    for v in value:
-                        lista_avdd.append(float(str(v).replace('[', '').replace(']', '')))
-            if key == 'I_AVDD':
-                if self.data['I_AVDD'] != []:
-                    for v in value:
-                        lista_i_avdd.append(float(str(v).replace('[', '').replace(']', '')))
-            if key == 'VDD':
-                if self.data['VDD'] != []:
-                    for v in value:
-                        lista_vdd.append(float(str(v).replace('[', '').replace(']', '')))
-            if key == 'I_VDD':
-                if self.data['I_VDD'] != []:
-                    for v in value:
-                        lista_i_vdd.append(float(str(v).replace('[', '').replace(']', '')))
-            if key == 'VREF':
-                if self.data['VREF'] != []:
-                    for v in value:
-                        lista_vref.append(float(str(v).replace('[', '').replace(']', '')))
-            if key == 'I_REF':
-                if self.data['I_REF'] != []:
-                    for v in value:
-                        lista_i_ref.append(float(str(v).replace('[', '').replace(']', '')))
-            if key == 'I_B':
-                if self.data['I_B'] != []:
-                    for v in value:
-                        lista_i_b.append(float(str(v).replace('[', '').replace(']', '')))
-            if key == 'RON':
-                if self.data['RON'] != []:
-                    for v in value:
-                        lista_ron.append(float(str(v).replace('[', '').replace(']', '')))
-            if key == 'TEMP':
-                if self.data['TEMP'] != []:
-                    for v in value:
-                        lista_temp.append(float(str(v).replace('[', '').replace(']', '')))
-            if key == 'FREQ':
-                if self.data['FREQ'] != []:
-                    for v in value:
-                        lista_freq.append(float(str(v).replace('[', '').replace(']', '')))
-            if key == 'PSSR':
-                if self.data['PSSR'] != []:
-                    for v in value:
-                        lista_pssr.append(float(str(v).replace('[', '').replace(']', '')))
-            if key == 'PHASE_NOISE':
-                if self.data['PHASE_NOISE'] != []:
-                    for v in value:
-                        lista_phase_noise.append(float(str(v).replace('[', '').replace(']', '')))
-            if key == 'TIMESTAMP':
-                if self.data['TIMESTAMP'] != []:
-                    for v in value:
-                        lista_timestamp.append(float(str(v).replace('[', '').replace(']', '')))
-            if key == 'TIMESTAMP_S':
-                if self.data['TIMESTAMP_S'] != []:
-                    for v in value:
-                        lista_timestamp_s.append(float(str(v).replace('[', '').replace(']', '')))
-        for key, value in meas.data.items():
-            if key == 'AVDD':
-                if meas.data['AVDD'] != []:
-                    lista_avdd.append(value)
-                elif meas.data['AVDD'] == []:
-                    lista_avdd.append(0.0)
-            if key == 'I_AVDD':
-                if meas.data['I_AVDD'] != []:
-                    lista_i_avdd.append(value)
-                elif meas.data['I_AVDD'] == []:
-                    lista_i_avdd.append(0.0)
-            if key == 'VDD':
-                if meas.data['VDD'] != []:
-                    lista_vdd.append(value)
-                elif meas.data['VDD'] == []:
-                    lista_vdd.append(0.0)
-            if key == 'I_VDD':
-                if meas.data['I_VDD'] != []:
-                    lista_i_vdd.append(value)
-                elif meas.data['I_VDD'] == []:
-                    lista_i_vdd.append(0.0)
-            if key == 'VREF':
-                if meas.data['VREF'] != []:
-                    lista_vref.append(value)
-                elif meas.data['VREF'] == []:
-                    lista_vref.append(0.0)
-            if key == 'I_REF':
-                if meas.data['I_REF'] != []:
-                    lista_i_ref.append(value)
-                elif meas.data['I_REF'] == []:
-                    lista_i_ref.append(0.0)
-            if key == 'I_B':
-                if meas.data['I_B'] != []:
-                    lista_i_b.append(value)
-                elif meas.data['I_B'] == []:
-                    lista_i_b.append(0.0)
-            if key == 'RON':
-                if meas.data['RON'] != []:
-                    lista_ron.append(value)
-                elif meas.data['RON'] == []:
-                    lista_ron.append(0.0)
-            if key == 'TEMP':
-                if meas.data['TEMP'] != []:
-                    lista_temp.append(value)
-                elif meas.data['TEMP'] == []:
-                    lista_temp.append(0.0)
-            if key == 'FREQ':
-                if meas.data['FREQ'] != []:
-                    lista_freq.append(value)
-                elif meas.data['FREQ'] == []:
-                    lista_freq.append(0.0)
-            if key == 'PSSR':
-                if meas.data['PSSR'] != []:
-                    lista_pssr.append(value)
-                elif meas.data['PSSR'] == []:
-                    lista_pssr.append(0.0)
-            if key == 'PHASE_NOISE':
-                if meas.data['PHASE_NOISE'] != []:
-                    lista_phase_noise.append(value)
-                elif meas.data['PHASE_NOISE'] == []:
-                    lista_phase_noise.append(.00)
-            if key == 'TIMESTAMP':
-                if meas.data['TIMESTAMP'] != []:
-                    lista_timestamp.append(value)
-                elif meas.data['TIMESTAMP'] == []:
-                    lista_timestamp.append(0.0)
+        for param, ind in self.index.items():
+            if param in meas.data:
+                new_data[ind] = meas.data[param]
+            else:
+                new_data[ind] = np.nan
 
-        lista_timestamp_s.append(meas.time)
+        # calculate the timestamp and adding time
+        new_data[self.index['TIMESTAMP']] = meas.time_out
+        new_data[self.index['ADDING_TIME']] = meas.time_out - meas.time_in
 
-        self.data.clear()
+        # append new row to matrix
+        self.matrix = np.vstack((self.matrix, new_data))
 
-        self.data['AVDD'] = lista_avdd
-        self.data['I_AVDD'] = lista_i_avdd
-        self.data['VDD'] = lista_vdd
-        self.data['I_VDD'] = lista_i_vdd
-        self.data['VREF'] = lista_vref
-        self.data['I_REF'] = lista_i_ref
-        self.data['I_B'] = lista_i_b
-        self.data['RON'] = lista_ron
-        self.data['TEMP'] = lista_temp
-        self.data['FREQ'] = lista_freq
-        self.data['PSSR'] = lista_pssr
-        self.data['PHASE_NOISE'] = lista_phase_noise
-        self.data['TIMESTAMP'] = lista_timestamp
-        self.data['TIMESTAMP_S'] = lista_timestamp_s
+    #===============================================================
+    def save(self, fname):
+        """Output data to file.
 
-        print(self.data)
+        fname: filename for the output file.
+
+        Note
+        ----
+        The human readable file is also output with the "_h" extension.
+        """
+
+        # output CSV
+        np.savetxt(fname + ".csv",
+                   self.matrix, delimiter = ",", header = self.header)
+
+        # output human readable
+        matrix_h = self._get_human_readable()
+        np.savetxt(fname + "_h.csv",
+                   matrix_h, delimiter = ",", header = self.header)
+
+    #===============================================================
+    # PRIVATE METHODS
+    #===============================================================
+    def _get_human_readable(self):
+        """Return human readable version of self.matrix.
+
+        Not implemented.
+        """
+
+        return self.matrix
