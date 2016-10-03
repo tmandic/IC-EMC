@@ -8,43 +8,34 @@ class DataCollector(object):
 
     """
 
-    # index connecting parameters to matrix columns
-    index = {
-        'AVDD'          : 0,
-        'I_AVDD'        : 1,
-        'VDD'           : 2,
-        'I_VDD'         : 3,
-        'VREF'          : 4,
-        'I_REF'         : 5,
-        'V_IREF'        : 6,
-        'IB'            : 7,
-        'RON'           : 8,
-        'PD'            : 9,
-        'TEMP'          : 10,
-        'FREQ'          : 11,
-        'PSRR'          : 12,
-        'PHASE_NOISE'   : 13,
-        'TIMESTAMP'     : 14,
-        'ADDING_TIME'   : 15,
-    }
+    # list of measured variables with units
+    meas_vars = [['AVDD', 'V'],
+                 ['I_AVDD', 'A'],
+                 ['VDD', 'V'],
+                 ['I_VDD', 'A'],
+                 ['VREF', 'V'],
+                 ['IREF', 'A'],
+                 ['V_IREF', 'V'],
+                 ['IB', 'A'],
+                 ['RON', 'V'],
+                 ['PD', 'A'],
+                 ['TEMP', 'C'],
+                 ['FREQ', 'Hz'],
+                 ['SENSITIVITY', 'Hz/V'],
+                 ['PHASE_NOISE', 'dBc/Hz'],
+                 ['TIMESTAMP', ''],
+                 ['ADDING_TIME', 's']]
+
+    # build index of variables and units
+    vars = dict()
+    units = dict()
+    for i, (var, unit) in enumerate(meas_vars):
+        vars[var] = i
+        units[var] = unit
 
     # define header
-    header = 'AVDD [V],' + \
-             'I_AVDD [A],' + \
-             'VDD [V],' + \
-             'I_VDD [A],' + \
-             'VREF [V],' + \
-             'I_REF [A],' + \
-             'V_IREF [V],' + \
-             'IB [A],' + \
-             'RON [V],' + \
-             'PD [V],' + \
-             'TEMP [C],' + \
-             'FREQ [Hz],' + \
-             'PSRR [Hz/V],' + \
-             'PHASE_NOISE,' + \
-             'TIMESTAMP [sse],' + \
-             'ADDING_TIME [s]'
+    header = ','.join([var + " [" + unit + "]"
+                           for var, unit in meas_vars])
 
     #===============================================================
     def __init__(self):
@@ -52,7 +43,7 @@ class DataCollector(object):
 
         """
 
-        ncol = len(self.index)
+        ncol = len(self.vars)
         self.matrix = np.array([]).reshape(0, ncol)
 
     #===============================================================
@@ -64,17 +55,17 @@ class DataCollector(object):
         meas: a Measurement object.
         """
 
-        new_data = np.zeros(len(self.index))
+        new_data = np.zeros(len(self.vars))
 
-        for param, ind in self.index.items():
+        for param, ind in self.vars.items():
             if param in meas.data:
                 new_data[ind] = meas.data[param]
             else:
                 new_data[ind] = np.nan
 
         # calculate the timestamp and adding time
-        new_data[self.index['TIMESTAMP']] = meas.time_out
-        new_data[self.index['ADDING_TIME']] = meas.time_out - meas.time_in
+        new_data[self.vars['TIMESTAMP']] = meas.time_out
+        new_data[self.vars['ADDING_TIME']] = meas.time_out - meas.time_in
 
         # append new row to matrix
         self.matrix = np.vstack((self.matrix, new_data))
@@ -89,6 +80,11 @@ class DataCollector(object):
         ----
         The human readable file is also output with the "_h" extension.
         """
+
+        # create output directory if it does not exist
+        output_dir = os.path.dirname(fname)
+        if not os.path.exists(output_dir):
+            os.mkdir(output_dir)
 
         # output CSV
         np.savetxt(fname + ".csv",

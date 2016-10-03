@@ -3,6 +3,7 @@ import numpy as np
 import time
 import os
 from nose.tools import *
+from pprint import pprint
 
 from .__init__ import __file__ as root
 from ..Measurement import *
@@ -25,6 +26,10 @@ def test_DataCollector_add():
 
     # define new DataCollector object
     data = DataCollector()
+
+    pprint(data.vars)
+    pprint(data.units)
+    pprint(data.header)
 
     # define new Measurement object
     meas = Measurement()
