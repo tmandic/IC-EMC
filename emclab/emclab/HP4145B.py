@@ -11,7 +11,7 @@ class HP4145B(GPIB):
 
     """
     #===============================================================
-    def __init__(self, addr, cd = None, channum = None,
+    def __init__(self, addr, fname = None, cd = None, channum = None,
                  vname = None, sourcefunction = None,
                  iname = None, sourcemode = None):
         """Initialization.
@@ -53,13 +53,18 @@ class HP4145B(GPIB):
         # get instrument address
 
         self.addr = addr
+        self.fname = fname
 
         # get instrument name
         self.name = self._name()
 
+        self._timestamp()
+
+        self._sent = str(self.name) + "\nTime: " + str(self.time) + "\nAddress: " + str(self.addr) + "\n"
+
         self.start()
 
-        self.chan_def(cd, channum, vname, sourcefunction, iname, sourcemode)
+        self.chan_def(cd = cd, channum = channum, vname = vname, sourcefunction = sourcefunction, iname = iname, sourcemode = sourcemode)
 
     #===============================================================
     def chan_def(self, cd = None, channum = None, vname = None, sourcefunction = None, iname = None, sourcemode = None):
@@ -116,10 +121,17 @@ class HP4145B(GPIB):
         else:
             raise ValueError("Wrong input.\n")
 
-        print("Channel {} - {} defined with the following parameters:\nVoltage name: {}".format(cd_a, self.channum, self.vname))
+        self._timestamp()
+
+        sent = "Channel {} - {} defined with the following parameters:\n\nVoltage name: {}\n".format(cd_a, self.channum, self.vname)
+        sentence = self._sent + sent
+        print(sentence)
+        self._write_sent(sentence)
 
         if self.iname != None:
-            print("Current name: {}".format(self.iname))
+            sent = "Current name: {}\n".format(self.iname)
+            print(sent)
+            self._write_sent(sent)
 
         if self.sourcemode != None:
             if self.sourcemode in [1, "1", "v", "V"]:
@@ -130,7 +142,9 @@ class HP4145B(GPIB):
                 sourcemode = "3: COM"
             else:
                 raise ValueError("Wrong input\n")
-            print("Source mode: {}".format(sourcemode))
+            sent = "Source mode: {}\n".format(sourcemode)
+            print(sent)
+            self._write_sent(sent)
 
         if self.sourcefunction != None:
             if self.sourcefunction in [1, "1", "VAR1", "var1"]:
@@ -143,7 +157,9 @@ class HP4145B(GPIB):
                 sourcefunction = "4: VAR1'"
             else:
                 raise ValueError("Wrong input\n")
-            print("Source function: {}\n".format(sourcefunction))
+            sent = "Source function: {}\n".format(sourcefunction)
+            print(sent)
+            self._write_sent(sent)
 
     #===============================================================
     def source_setup(self, sourcemode = None, sweepmode = None, startval = None, stopval = None,
@@ -194,7 +210,7 @@ class HP4145B(GPIB):
             self._source_setup_var2(sourcemode = sourcemode, startval = startval,
                                     stepval = stepval, nusteps = nusteps, compval = compval)
         elif self.sourcefunction in ["const", "CONST", "3", 3]:
-            sf = "VAR3"
+            sf = "CONST"
             if self.cd in ['SMU', 'smu', "1", 1]:
                 self._source_setup_const_smu(sourcemode = sourcemode, compval = compval, outval = outval)
             elif self.cd in ['VS', 'Vs', 'vs', "2", 2]:
@@ -204,7 +220,12 @@ class HP4145B(GPIB):
         else:
             raise ValueError("Error")
 
-        print("Source {} is set up with the following parameters:".format(sf))
+        self._timestamp()
+
+        sent = "Source {} is set up with the following parameters:\n".format(sf)
+        sentence = self._sent + sent
+        print(sentence)
+        self._write_sent(sentence)
 
         if self.sourcemode_ss != None:
             if self.sourcemode_ss in [1, "1", "v", "V"]:
@@ -213,7 +234,9 @@ class HP4145B(GPIB):
                 sourcemode = '2: I'
             else:
                 raise ValueError("Wrong input\n")
-            print("Source mode is: {}".format(sourcemode))
+            sent = "Source mode is: {}\n".format(sourcemode)
+            print(sent)
+            self._write_sent(sent)
 
         if self.sweepmode != None:
             if self.sweepmode in [1, "1", "LINEAR", "linear"]:
@@ -226,27 +249,39 @@ class HP4145B(GPIB):
                 sweepmode = "4: LOG 50"
             else:
                 raise ValueError("Wrong input\n")
-            print("Sweep mode: {}".format(sweepmode))
+            sent = "Sweep mode: {}\n".format(sweepmode)
+            print(sent)
+            self._write_sent(sent)
 
         if self.startval != None:
-            print("Start value: {}".format(self.startval))
+            sent = "Start value: {}\n".format(self.startval)
+            print(sent)
+            self._write_sent(sent)
 
         if self.stopval != None:
-            print("Stop value: {}".format(self.stopval))
+            sent = "Stop value: {}\n".format(self.stopval)
+            print(sent)
+            self._write_sent(sent)
 
         if self.stepval != None:
-            print("Step value: {}".format(self.stepval))
+            sent = "Step value: {}\n".format(self.stepval)
+            print(sent)
+            self._write_sent(sent)
 
         if self.nusteps != None:
-            print("Number of steps: {}".format(self.nusteps))
+            sent = "Number of steps: {}\n".format(self.nusteps)
+            print(sent)
+            self._write_sent(sent)
 
         if self.outval != None:
-            print("Output value: {}".format(self.outval))
+            sent = "Output value: {}\n".format(self.outval)
+            print(sentence)
+            self._write_sent(sent)
 
         if self.compval != None:
-            print("Compliance value: {}".format(self.compval))
-
-        print("\n")
+            sent = "Compliance value: {}\n".format(self.compval)
+            print(sent)
+            self._write_sent(sent)
 
     #===============================================================
     def measure(self, me = None):
@@ -294,7 +329,11 @@ class HP4145B(GPIB):
 
         self.param = param
 
-        print("Measuring of {} started in mode: {}\n".format(param, me_a))
+        self._timestamp()
+        sent = "Measuring of {} started in mode: {}\n".format(param, me_a)
+        sentence = self._sent + sent
+        print(sentence)
+        self._write_sent(sentence)
 
         self._dev.write("MD ME{}".format(me))
 
@@ -302,7 +341,11 @@ class HP4145B(GPIB):
 
         time.sleep(ts)
 
-        print("Measuring done.\n")
+        self._timestamp()
+        sent = "Measuring done.\n"
+        sentence = self._sent + sent
+        print(sentence)
+        self._write_sent(sentence)
 
     #===============================================================
     def get_res(self):
@@ -328,13 +371,25 @@ class HP4145B(GPIB):
 
         string = self._dev.query("ENTER")
 
+        print("\n PRINTANJE STRINGA \n")
+        print(string)
+        print("\n")
+
 ##        string = string.replace('N', '').replace(' ', '').replace('C', '')
 ##        print(string)
 ##        out = [float(s) for s in string.split(',')]
 
         out = self._format_res(string)
 
-        print("The measurement of {} gave the following results:\n{}\n".format(self.param, out))
+        print("\n PRINTANJE OUTA \n")
+        print(out)
+        print("\n")
+
+        self._timestamp()
+        sent = "The measurement of {} gave the following results:\n{}\n".format(self.param, out)
+        sentence = self._sent + sent
+        print(sentence)
+        self._write_sent(sentence)
 
         return out
 
@@ -365,7 +420,11 @@ class HP4145B(GPIB):
         else:
             raise ValueError("Wrong input.\n")
 
-        print("Channel {}-{} turned of.\n".format(cd, channum))
+        self._timestamp()
+        sent = "Channel {}-{} turned of.\n".format(cd, channum)
+        sentence = self._sent + sent
+        print(sentence)
+        self._write_sent(sentence)
 
     #===============================================================
     def start(self, it = 1, ca = 1, dr = 0):
@@ -397,7 +456,11 @@ class HP4145B(GPIB):
         self.data_ready(dr = dr)
         self.buffer_clear()
 
-        print("Started the device.\n")
+        self._timestamp()
+        sent = "Started the device.\n"
+        sentence = self._sent + sent
+        print(sentence)
+        self._write_sent(sentence)
 
     #===============================================================
     def integration_time(self, it = None):
@@ -429,7 +492,11 @@ class HP4145B(GPIB):
             raise ValueError("Wrong input\n")
 
         self._dev.write("IT{}".format(it))
-        print("Integration time has been set to mode: {}\n".format(it_a))
+        self._timestamp()
+        sent = "Integration time has been set to mode: {}\n".format(it_a)
+        sentence = self._sent + sent
+        print(sentence)
+        self._write_sent(sentence)
 
     #===============================================================
     def calibration(self, ca = None):
@@ -455,7 +522,11 @@ class HP4145B(GPIB):
             raise ValueError("Wrong input\n")
 
         self._dev.write("CA{}".format(ca))
-        print("Auto calibration is {}\n".format(ca_a))
+        self._timestamp()
+        sent = "Auto calibration is {}\n".format(ca_a)
+        sentence = self._sent + sent
+        print(sentence)
+        self._write_sent(sentence)
 
     #===============================================================
     def data_ready(self, dr):
@@ -486,39 +557,14 @@ class HP4145B(GPIB):
 
         """
         self._dev.write("BC")
-        print("Data output buffer cleared.\n")
-
-    #===============================================================
-    def get_address(self):
-        """Get the device's address.
-
-        """
-        return self.addr
-    #===============================================================
-    def remove_error(self):
-        """Remove a single error.
-
-        """
-        self._dev.query('SYS:ERR?')
-
-    #===============================================================
-    def remove_errors(self):
-        """Remove all errors.
-
-        """
-        self._dev.write('*CLS')
+        self._timestamp()
+        sent = "Data output buffer cleared.\n"
+        sentence = self._sent + sent
+        print(sentence)
+        self._write_sent(sentence)
 
     #===============================================================
     # PRIVATE METHODS
-    #===============================================================
-    def _name(self):
-        """Return device name.
-
-        """
-        name = self._dev.query('*IDN?')
-        name = name.rstrip('\r\n')
-        return name
-
     #===============================================================
     def _smu_def(self, channum = None, vname = None, sourcefunction = None, iname = None, sourcemode = None):
         """Channel definition FOR smu.
@@ -648,7 +694,6 @@ class HP4145B(GPIB):
         if sourcefunction == None:
             sourcefunction = input("Enter the source function: ")
         self.sourcefunction = sourcefunction
-        print(sourcefunction)
         if sourcefunction in [1, "1", "VAR1", "var1"]:
             sourcefunction = 1
         elif sourcefunction in [2, "2", "VAR2", "var2"]:
@@ -932,7 +977,7 @@ class HP4145B(GPIB):
             outval = float(input("Enter output value: "))
         self.outval = outval
 
-        self._dev.write("SS {}{},{},{}".format(sourcemode, self.channum, outval, compval))
+        self._dev.write("SS {}{},{:E},{}".format(sourcemode, self.channum, outval, compval))
 
     #===============================================================
     def _source_setup_const_vs(self, outval = None):
@@ -980,6 +1025,7 @@ class HP4145B(GPIB):
         string: output result
 
         """
+        marker = None
         res = dict()
         lista = list()
         listn = list()
@@ -989,38 +1035,45 @@ class HP4145B(GPIB):
         listc = list()
         listt = list()
         for s in string:
-            lista.clear()
-            while s != ',':
-                if s == 'N':
-                    lista.append(s)
-                    lista = ''.join(lista)
-                    lista = lista.replace('N', '').replace(' ', '')
+            if s in [",", "\r"]:
+                print("\n PRVI LISTA \n {} \n".format(lista))
+                lista = ''.join(lista)
+                lista = lista.replace(' ', '')
+                if marker == 'N':
                     listn.append(float(lista))
-                elif s == 'L':
-                    lista.append(s)
-                    lista = ''.join(lista)
-                    lista = lista.replace('L', '').replace(' ', '')
+                elif marker == 'L':
                     listl.append(float(lista))
-                elif s == 'V':
-                    lista.append(s)
-                    lista = ''.join(lista)
-                    lista = lista.replace('V', '').replace(' ', '')
+                elif marker == 'V':
                     listv.append(float(lista))
-                elif s == 'X':
-                    lista.append(s)
-                    lista = ''.join(lista)
-                    lista = lista.replace('X', '').replace(' ', '')
+                elif marker == 'X':
                     listx.append(float(lista))
-                elif s == 'C':
-                    lista.append(s)
-                    lista = ''.join(lista)
-                    lista = lista.replace('C', '').replace(' ', '')
+                elif marker == 'C':
                     listc.append(float(lista))
-                elif s == 'T':
-                    lista.append(s)
-                    lista = ''.join(lista)
-                    lista = lista.replace('T', '').replace(' ', '')
+                elif marker == 'T':
                     listt.append(float(lista))
+                else:
+                    raise ValueError("Error\n")
+                if s == "\r":
+                    break
+                print("\n DRUGI LISTA \n {} \n".format(lista))
+                marker = None
+                lista = list()
+            elif s == 'N':
+                marker = 'N'
+            elif s == 'L':
+                marker = 'L'
+            elif s == 'V':
+                marker = 'V'
+            elif s == 'X':
+                marker = 'X'
+            elif s == 'C':
+                marker = 'C'
+            elif s == 'T':
+                marker = 'T'
+            else:
+                lista.append(str(s))
+
+        print("\n TRECI LISTA \n {} \n".format(lista))
 
         res['N'] = listn
         res['L'] = listl
@@ -1029,108 +1082,7 @@ class HP4145B(GPIB):
         res['C'] = listc
         res['T'] = listt
 
+        if (len(res['L'])==0) and (len(res['V'])==0) and (len(res['X'])==0) and (len(res['C'])==0) and (len(res['T'])==0):
+            res = listn
+
         return res
-
-    #===============================================================
-    def _reset(self, sleeptime = 1):
-        """Reset device.
-
-           Returns the sleeptime.
-
-        Input parameters
-        ----------------
-        sleeptime: sleep time in seconds
-        (if nothing is entered, the default sleeptime is 1s)
-
-        """
-        self._dev.write('*RST')
-        time.sleep(sleeptime)
-        return sleeptime
-
-    #===============================================================
-    def _write_sent(self, sentence):
-        """Write a sentence in a file.
-
-        Input parameters
-        ----------------
-        sentence: predetermined
-
-        """
-        with open(self.fname + ".txt", "a") as f:
-            f.write(sentence)
-
-    #===============================================================
-    def _timestamp(self):
-        """Creates a timestamp both in float and string format.
-
-           Returns the created timestamp.
-
-        """
-        self.time_float = time.time()
-        t0 = time.asctime(time.localtime(self.time_float))
-        t1 = t0[4:]
-        t2=[]
-        for t in t1:
-            t2.append(t)
-        if t1.startswith('Jan'):
-            t3 = t2[4:]
-            t3.insert(0, '1')
-            t3.insert(0, '0')
-        elif t1.startswith('Feb'):
-            t3 = t2[4:]
-            t3.insert(0, '2')
-            t3.insert(0, '0')
-        elif t1.startswith('Mar'):
-            t3 = t2[4:]
-            t3.insert(0, '3')
-            t3.insert(0, '0')
-        elif t1.startswith('Apr'):
-            t3 = t2[4:]
-            t3.insert(0, '4')
-            t3.insert(0, '0')
-        elif t1.startswith('May'):
-            t3 = t2[4:]
-            t3.insert(0, '5')
-            t3.insert(0, '0')
-        elif t1.startswith('Jun'):
-            t3 = t2[4:]
-            t3.insert(0, '6')
-            t3.insert(0, '0')
-        elif t1.startswith('Jul'):
-            t3 = t2[4:]
-            t3.insert(0, '7')
-            t3.insert(0, '0')
-        elif t1.startswith('Aug'):
-            t3 = t2[4:]
-            t3.insert(0, '8')
-            t3.insert(0, '0')
-        elif t1.startswith('Sep'):
-            t3 = t2[4:]
-            t3.insert(0, '9')
-            t3.insert(0, '0')
-        elif t1.startswith('Oct'):
-            t3 = t2[4:]
-            t3.insert(0, '0')
-            t3.insert(0, '1')
-        elif t1.startswith('Nov'):
-            t3 = t2[4:]
-            t3.insert(0, '1')
-            t3.insert(0, '1')
-        elif t1.startswith('Dec'):
-            t3 = t2[4:]
-            t3.insert(0, '2')
-            t3.insert(0, '1')
-        else:
-            raise ValueError("Wrong date\n")
-        for i in range(2):
-            t3.remove(' ')
-        for i in [2, 5, 14]:
-            t3.insert(i, '_')
-        day = t3[3:6]
-        month = t3[0:3]
-        year = t3[15:19]
-        handm = t3[5:11]
-        t4 = day + month + year + handm
-        timestr=''.join(t4)
-        self.time = timestr
-        return timestr

@@ -28,17 +28,18 @@ def list_setup(list_of_hps):
     sent = "SM DM2 LI "
     lista = list()
     for hp in list_of_hps:
-        comma = ','
-        if hp == list_of_hps[-1]:
-            comma = ''
-        if hp.sourcemode_ss in [1, "1", "v", "V"]:
-            sent = sent + "'" + hp.iname + "'" + comma
-            lista.append(hp.iname)
-        elif hp.sourcemode_ss in [2, "2", "i", "I"]:
-            sent = sent + "'" + hp.vname + "'" + comma
-            lista.append(hp.vname)
-        else:
-            raise ValueError("Wrong input\n")
+        if (hp.sourcefunction not in ["const", "CONST", "3", 3]) and (hp.cd not in ['SMU', 'smu', "1", 1]):
+            comma = ','
+            if hp == list_of_hps[-1]:
+                comma = ''
+            if hp.sourcemode_ss in [1, "1", "v", "V"]:
+                sent = sent + "'" + hp.iname + "'" + comma
+                lista.append(hp.iname)
+            elif hp.sourcemode_ss in [2, "2", "i", "I"]:
+                sent = sent + "'" + hp.vname + "'" + comma
+                lista.append(hp.vname)
+            else:
+                raise ValueError("Wrong input\n")
 
     hp0._dev.write(str(sent))
     print("Monitor channels:\n{}".format(str(lista).replace('[', '').replace(']', '')))

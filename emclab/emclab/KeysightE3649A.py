@@ -38,15 +38,6 @@ class KeysightE3649A(GPIB):
         self.name = self._name()
 
     #===============================================================
-    def get_address(self):
-        """Get the device's address.
-
-        Returns the device's address.
-
-        """
-        return self.addr
-
-    #===============================================================
     def get_channel(self):
         """Get the device's channel.
 
@@ -239,46 +230,7 @@ class KeysightE3649A(GPIB):
 ##    print("The overvoltage protection circuit has been cleared.\n")
 
     #===============================================================
-    def remove_error(self):
-        """Remove a single error.
-
-        """
-        self._dev.query('SYS:ERR?')
-
-    #===============================================================
-    def remove_errors(self):
-        """Remove all errors.
-
-        """
-        self._dev.write('*CLS')
-
-    #===============================================================
     # PRIVATE METHODS
-    #===============================================================
-    def _name(self):
-        """Return device name.
-
-        """
-        name = self._dev.query('*IDN?')
-        name = name.rstrip('\n')
-        return name
-
-    #===============================================================
-    def _reset(self, sleeptime = 1):
-        """Reset device.
-
-           Returns the sleeptime.
-
-        Input parameters
-        ----------------
-        sleeptime: sleep time in seconds
-        (if nothing is entered, the default sleeptime is 1s)
-
-        """
-        self._dev.write('*RST')
-        time.sleep(sleeptime)
-        return sleeptime
-
     #===============================================================
     def _sel(self):
         """Select channel.
@@ -287,7 +239,7 @@ class KeysightE3649A(GPIB):
 
         self._timestamp()
 
-        self._sent = "Time: " + str(self.time) + "\nAddress: " + str(self.addr) + \
+        self._sent = str(self.name) + "\nTime: " + str(self.time) + "\nAddress: " + str(self.addr) + \
                      "\nChannel: " + str(self.chan) + "\n"
 
         if self.chan in [1, 'l', 'left']:
@@ -332,91 +284,3 @@ class KeysightE3649A(GPIB):
         self._write_sent(sentence)
 
         return U, I
-
-    #===============================================================
-    def _write_sent(self, sentence):
-        """Write a sentence in a file.
-
-        Input parameters
-        ----------------
-        sentence: predetermined
-
-        """
-        with open(self.fname + ".txt", "a") as f:
-            f.write(sentence)
-
-    #===============================================================
-    def _timestamp(self):
-        """Creates a timestamp both in float and string format.
-
-           Returns the created timestamp.
-
-        """
-        self.time_float = time.time()
-        t0 = time.asctime(time.localtime(self.time_float))
-        t1 = t0[4:]
-        t2=[]
-        for t in t1:
-            t2.append(t)
-        if t1.startswith('Jan'):
-            t3 = t2[4:]
-            t3.insert(0, '1')
-            t3.insert(0, '0')
-        elif t1.startswith('Feb'):
-            t3 = t2[4:]
-            t3.insert(0, '2')
-            t3.insert(0, '0')
-        elif t1.startswith('Mar'):
-            t3 = t2[4:]
-            t3.insert(0, '3')
-            t3.insert(0, '0')
-        elif t1.startswith('Apr'):
-            t3 = t2[4:]
-            t3.insert(0, '4')
-            t3.insert(0, '0')
-        elif t1.startswith('May'):
-            t3 = t2[4:]
-            t3.insert(0, '5')
-            t3.insert(0, '0')
-        elif t1.startswith('Jun'):
-            t3 = t2[4:]
-            t3.insert(0, '6')
-            t3.insert(0, '0')
-        elif t1.startswith('Jul'):
-            t3 = t2[4:]
-            t3.insert(0, '7')
-            t3.insert(0, '0')
-        elif t1.startswith('Aug'):
-            t3 = t2[4:]
-            t3.insert(0, '8')
-            t3.insert(0, '0')
-        elif t1.startswith('Sep'):
-            t3 = t2[4:]
-            t3.insert(0, '9')
-            t3.insert(0, '0')
-        elif t1.startswith('Oct'):
-            t3 = t2[4:]
-            t3.insert(0, '0')
-            t3.insert(0, '1')
-        elif t1.startswith('Nov'):
-            t3 = t2[4:]
-            t3.insert(0, '1')
-            t3.insert(0, '1')
-        elif t1.startswith('Dec'):
-            t3 = t2[4:]
-            t3.insert(0, '2')
-            t3.insert(0, '1')
-        else:
-            raise ValueError("Wrong date\n")
-        for i in range(2):
-            t3.remove(' ')
-        for i in [2, 5, 14]:
-            t3.insert(i, '_')
-        day = t3[3:6]
-        month = t3[0:3]
-        year = t3[15:19]
-        handm = t3[5:11]
-        t4 = day + month + year + handm
-        timestr=''.join(t4)
-        self.time = timestr
-        return timestr
