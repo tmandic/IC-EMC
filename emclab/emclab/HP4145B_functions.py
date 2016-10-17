@@ -58,7 +58,7 @@ def meas_setup(list_of_hps, interval = None, nureadings = None, wait = None):
     print("Measurement has been set up with the following settings:")
     print("Wait time: {} s\nInterval time: {} s\nNumber of readings: {}\n".format(wait, interval, nureadings))
 
-def measure(list_of_hps, mode, osc, osc1, osc2):
+def measure(list_of_hps, mode, osc = None, osc1 = None, osc2 = None):
     hp0 = list_of_hps[0]
     hp0.measure(me = mode, osc = osc, osc1 = osc1, osc2 = osc2)
     meas = dict()

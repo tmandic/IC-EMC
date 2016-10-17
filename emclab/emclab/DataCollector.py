@@ -9,7 +9,7 @@ class DataCollector(object):
     """
 
     # list of measured variables with units
-    meas_vars = [['AVDD', 'V'],
+    _meas_vars = [['AVDD', 'V'],
                  ['I_AVDD', 'A'],
                  ['VDD', 'V'],
                  ['I_VDD', 'A'],
@@ -29,13 +29,13 @@ class DataCollector(object):
     # build index of variables and units
     vars = dict()
     units = dict()
-    for i, (var, unit) in enumerate(meas_vars):
+    for i, (var, unit) in enumerate(_meas_vars):
         vars[var] = i
         units[var] = unit
 
     # define header
     header = ','.join([var + " [" + unit + "]"
-                           for var, unit in meas_vars])
+                           for var, unit in _meas_vars])
 
     #===============================================================
     def __init__(self):
