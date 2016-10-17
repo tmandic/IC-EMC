@@ -11,7 +11,7 @@ class MSO7034B(GPIB):
 
     """
     #===============================================================
-    def __init__(self, addr, chan = None):
+    def __init__(self, addr, chan = None, fname = None):
         """Initialization.
 
         """
@@ -27,9 +27,9 @@ class MSO7034B(GPIB):
 
         self._timestamp()
 
-        self.sel_chan(chan = chan)
+        self.fname = fname
 
-        self._sent = "Time: " + str(self.time) + "\nAddress: " + str(self.addr) + "\n"
+        self._sel_chan(chan = chan)
 
     #===============================================================
     def meas_width(self, pul = None):
@@ -57,7 +57,9 @@ class MSO7034B(GPIB):
         sent = "The measured width of the pulse is: {}\n".format(width)
         sentence = self._sent + sent
         print(sentence)
-        self._write_sent(sentence)
+        if self.fname != None:
+            self._write_sent(sentence)
+
         return width
 
     #===============================================================
@@ -71,11 +73,15 @@ class MSO7034B(GPIB):
         sent = "The measured frequency is: {}\n".format(freq)
         sentence = self._sent + sent
         print(sentence)
-        self._write_sent(sentence)
+        if self.fname != None:
+            self._write_sent(sentence)
+
         return freq
 
     #===============================================================
-    def sel_chan(self, chan = None):
+    # PRIVATE METHODS
+    #===============================================================
+    def _sel_chan(self, chan = None):
         """Select channel.
 
         Input parameters
@@ -90,8 +96,12 @@ class MSO7034B(GPIB):
             raise ValueError("Wrong input")
 
         self.chan = chan
+
+        self._sent = "Time: " + str(self.time) + "\nAddress: " + str(self.addr) + "\nChannel: " + str(self.chan) + "\n\n"
+
         self._dev.write(':MEASURE:SOURCE CHANNEL{}'.format(chan))
-        sent = "The selected channel is: {}".format(chan)
+        sent = "The selected channel is: {}\n".format(chan)
         sentence = self._sent + sent
         print(sentence)
-        self._write_sent(sentence)
+        if self.fname != None:
+            self._write_sent(sentence)
