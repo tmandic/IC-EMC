@@ -11,7 +11,7 @@ class HP5385A(GPIB):
 
     """
     #===============================================================
-    def __init__(self, addr):
+    def __init__(self, addr, chan = None, fname = None):
         """Initialization.
 
         """
@@ -25,141 +25,139 @@ class HP5385A(GPIB):
         # get instrument name
         self.name = self._name()
 
-        self._sent = "Time: " + str(self.time) + "\nAddress: " + str(self.addr) + "\n"
+        self._timestamp()
+
+        self.fname = fname
+
+        self._sel_chan(chan = chan)
 
     #===============================================================
-    def meas_freq(self):
+    def meas_freq(self, chan = None):
         """Measure frequency.
 
         Returns frequency.
 
+        Input parameters:
+        chan - select channel:
+        1, '1', 'A' or 2, '2', 'B'
         """
-        freq = self._dev.query("ENTER")
+        self._dev.write('"FU{}"'.format(self.chan))
+        freq = self._dev.query('ENTER')
 
-        print("The measured frequency is: {}\n".format(freq))
+        sent = "The measured frequency is: {} Hz.\n".format(freq)
+        sentence = self._sent + sent
+        print(sentence)
+        if self.fname != None:
+            self._write_sent(sentence)
 
         return freq
 
     #===============================================================
-    def get_address(self):
-        """Get the device's address.
+    def set_attn(self, attn = None):
+        """Sets attenuation to 1 or 20.
 
+        Returns attenuation.
+
+        Input parameters:
+        attn - atenuation level:
+        1, '1' or 2, '2', 20, '20'
         """
-        return self.addr
+        if attn == None:
+            attn = int(input("Enter an attenuation level:\n1 - 1\n2 - 20\n"))
+
+        if attn in [1,'1']:
+            attn = 1
+            attnl = 0
+        elif attn in [2, '2', 20, '20']:
+            attn = 20
+            attnl = 1
+        else:
+            raise ValueError("Please enter a valid input\n")
+
+        self._dev.write('"AT{}"'.format(attnl))
+        sent = "Attenuation has been set to: {}\n".format(attn)
+        sentence = self._sent + sent
+        print(sentence)
+        if self.fname != None:
+            self._write_sent(sentence)
+
+        return attn
 
     #===============================================================
-    def remove_error(self):
-        """Remove a single error.
+    def set_filter(self, filt = None):
+        """Enables or disables A-Input 100 kHz LPF.
 
+        Returns filter status.
+
+        Input parameters:
+        filt - filter turned on or off
+        1, '1', 'off', 'Off', 'OFF' or 2, '2', 'on', 'On', 'ON'
         """
-        self._dev.query('SYS:ERR?')
+
+        if filt == None:
+            input("Turn A-Input 100kHz LPF:\n1 - OFF\n2 - ON\n")
+
+        if filt in [1, '1', 'off', 'Off', 'OFF']:
+            filt = 'OFF'
+            filts = 0
+        elif filt in [2, '2', 'on', 'On', 'ON']:
+            filt = 'ON'
+            filts = 1
+        else:
+            raise ValueError("Please enter a valid input\n")
+
+        self._dev.write('"FI{}"'.format(filts))
+        sent = "A-Input 100 kHz LPF is set to: {}.\n".format(filt)
+        sentence = self._sent + sent
+        print(sentence)
+        if self.fname != None:
+            self._write_sent(sentence)
+
+        return filt
 
     #===============================================================
-    def remove_errors(self):
-        """Remove all errors.
+    def initial(self):
+        """Resets abd gi ti Default state.
 
         """
-        self._dev.write('*CLS')
+
+        self._dev.write('"IN"')
+        sent = "Device has been reset.\n"
+        sentence = self._sent + sent
+        print(sentence)
+        self._write_sent(sentence)
 
     #===============================================================
     # PRIVATE METHODS
     #===============================================================
-    def _name(self):
-        """Return device name.
+    def _sel_chan(self, chan = None):
+        """Select channel.
+
+        Returns channel number.
+
+        Input parameters:
+        chan - select channel:
+        1, '1', 'A' or 2, '2', 'B'
 
         """
-        name = self._dev.query('*IDN?')
-        name = name.rstrip('\n')
-        return name
-    #===============================================================
-    def _reset(self):
-        """Reset device.
+        if chan == None:
+            chan = input("Select a channel:\n1 - A\n2 - B\n")
 
-        """
-        self._dev.write('*RST')
-        time.sleep(1)
-
-    #===============================================================
-    def _write_sent(self, sentence):
-        """Write a sentence in a file.
-
-        Input parameters
-        ----------------
-        sentence: predetermined
-
-        """
-        with open(self.fname, "a") as f:
-            f.write(sentence)
-
-    #===============================================================
-    def _timestamp(self):
-        """Creates a timestamp both in float and string format.
-
-
-        """
-        t0 = time.asctime(time.localtime(time.time()))
-        t1 = t0[4:]
-        t2=[]
-        for t in t1:
-            t2.append(t)
-        if t1.startswith('Jan'):
-            t3 = t2[4:]
-            t3.insert(0, '1')
-            t3.insert(0, '0')
-        elif t1.startswith('Feb'):
-            t3 = t2[4:]
-            t3.insert(0, '2')
-            t3.insert(0, '0')
-        elif t1.startswith('Mar'):
-            t3 = t2[4:]
-            t3.insert(0, '3')
-            t3.insert(0, '0')
-        elif t1.startswith('Apr'):
-            t3 = t2[4:]
-            t3.insert(0, '4')
-            t3.insert(0, '0')
-        elif t1.startswith('May'):
-            t3 = t2[4:]
-            t3.insert(0, '5')
-            t3.insert(0, '0')
-        elif t1.startswith('Jun'):
-            t3 = t2[4:]
-            t3.insert(0, '6')
-            t3.insert(0, '0')
-        elif t1.startswith('Jul'):
-            t3 = t2[4:]
-            t3.insert(0, '7')
-            t3.insert(0, '0')
-        elif t1.startswith('Aug'):
-            t3 = t2[4:]
-            t3.insert(0, '8')
-            t3.insert(0, '0')
-        elif t1.startswith('Sep'):
-            t3 = t2[4:]
-            t3.insert(0, '9')
-            t3.insert(0, '0')
-        elif t1.startswith('Oct'):
-            t3 = t2[4:]
-            t3.insert(0, '0')
-            t3.insert(0, '1')
-        elif t1.startswith('Nov'):
-            t3 = t2[4:]
-            t3.insert(0, '1')
-            t3.insert(0, '1')
-        elif t1.startswith('Dec'):
-            t3 = t2[4:]
-            t3.insert(0, '2')
-            t3.insert(0, '1')
+        if chan in [1,'1','A']:
+            chan = 1
+        elif chan in [2, '2', 3, '3', 'B']:
+            chan = 3
         else:
-            raise ValueError("Wrong date\n")
-        for i in range(2):
-            t3.remove(' ')
-        for i in [2, 5, 14]:
-            t3.insert(i, '_')
-        day = t3[3:6]
-        month = t3[0:3]
-        year = t3[15:19]
-        handm = t3[5:11]
-        t4 = day + month + year + handm
-        timestr=''.join(t4)
-        self.time = timestr
+            raise ValueError("Please enter a valid input\n")
+
+        self.chan = chan
+
+        self._sent = "Time: " + str(self.time) + "\nAddress: " + str(self.addr) + "\nChannel: " + str(self.chan) + "\n"
+
+        sent = "The selected channel is: {}\n".format(chan)
+        sentence = self._sent + sent
+        print(sentence)
+        if self.fname != None:
+            self._write_sent(sentence)
+
+        return chan
