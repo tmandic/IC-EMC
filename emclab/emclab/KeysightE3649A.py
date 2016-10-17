@@ -27,15 +27,16 @@ class KeysightE3649A(GPIB):
         self.addr = addr
         self.fname = fname
         self.chan = channel
+        self.fname = fname
+
+        # get instrument name
+        self.name = self._name()
 
         # reset: outputs are off
         self._reset()
 
         # enable channel
         self.enable()
-
-        # get instrument name
-        self.name = self._name()
 
     #===============================================================
     def get_channel(self):
@@ -111,7 +112,8 @@ class KeysightE3649A(GPIB):
             U = float(self._dev.query('MEAS:VOLT?'))
             sentence = self._sent + "The measured voltage is: " + str(U) + "V.\n\n"
             print(sentence)
-            self._write_sent(sentence)
+            if self.fname != None:
+                self._write_sent(sentence)
             return U
         else:
             U, I = self._set_param(volt = volt)
@@ -137,7 +139,8 @@ class KeysightE3649A(GPIB):
             I = float(self._dev.query('MEAS:CURR?'))
             sentence = self._sent + "The measured current is: " + str(I) + "A.\n\n"
             print(sentence)
-            self._write_sent(sentence)
+            if self.fname != None:
+                self._write_sent(sentence)
             return I
         else:
             U, I = self._set_param(max_curr = max_curr)
@@ -163,11 +166,13 @@ class KeysightE3649A(GPIB):
         if out.startswith('P35V'):
             sentence = self._sent + "Low range: 35V.\n\n"
             print(sentence)
-            self._write_sent(sentence)
+            if self.fname != None:
+                self._write_sent(sentence)
         elif out.startswith('P60V'):
             sentence = self._sent + "High range: 60V.\n\n"
             print(sentence)
-            self._write_sent(sentence)
+            if self.fname != None:
+                self._write_sent(sentence)
         else:
             raise ValueError("Wrong output from instrument.\n")
 
@@ -194,28 +199,33 @@ class KeysightE3649A(GPIB):
         out = self._dev.query('VOLT:PROT?')
         sentence = self._sent + "The overvoltage protection is set to:" + str(out) + "V.\n\n"
         print(sentence)
-        self._write_sent(sentence)
+        if self.fname != None:
+                self._write_sent(sentence)
 
         if state in [1, 'on']:
             self._dev.write('VOLT:PROT:STAT 1')
             sentence = self._sent + "Overvoltage protection is on.\n\n"
             print(sentence)
-            self._write_sent(sentence)
+            if self.fname != None:
+                self._write_sent(sentence)
         elif state in [0, 'off'] :
             self._dev.write('VOLT:PROT:STAT 0')
             sentence = self._sent + "Overvoltage protection is off.\n\n"
             print(sentence)
-            self._write_sent(sentence)
+            if self.fname != None:
+                self._write_sent(sentence)
         elif state == None:
             o = self._dev.query('VOLT:PROT:STAT?')
             if o.startswith('1'):
                 sentence = self._sent + "Overvoltage protection is on.\n\n"
                 print(sentence)
-                self._write_sent(sentence)
+                if self.fname != None:
+                    self._write_sent(sentence)
             elif o.startswith('0'):
                 sentence = self._sent + "Overvoltage protection is off.\n\n"
                 print(sentence)
-                self._write_sent(sentence)
+                if self.fname != None:
+                    self._write_sent(sentence)
             else:
                 raise ValueError("Please make a valid input\n.")
         else:
@@ -277,10 +287,12 @@ class KeysightE3649A(GPIB):
         U = float(self._dev.query('MEAS:VOLT?'))
         sentence = self._sent + "Voltage stabilized to " + str(U) + "V.\n\n"
         print(sentence)
-        self._write_sent(sentence)
+        if self.fname != None:
+            self._write_sent(sentence)
         I = float(self._dev.query('MEAS:CURR?'))
         sentence = self._sent + "Current stabilized to " + str(I) +  "A.\n\n"
         print(sentence)
-        self._write_sent(sentence)
+        if self.fname != None:
+            self._write_sent(sentence)
 
         return U, I
