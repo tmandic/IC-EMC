@@ -28,7 +28,7 @@ def list_setup(list_of_hps):
     sent = "SM DM2 LI "
     lista = list()
     for hp in list_of_hps:
-        if (hp.sourcefunction not in ["const", "CONST", "3", 3]) and (hp.cd not in ['SMU', 'smu', "1", 1]):
+        if hp.cd not in ['VS', 'Vs', 'vs', '2', 2]:
             comma = ','
             if hp == list_of_hps[-1]:
                 comma = ''
@@ -58,11 +58,12 @@ def meas_setup(list_of_hps, interval = None, nureadings = None, wait = None):
     print("Measurement has been set up with the following settings:")
     print("Wait time: {} s\nInterval time: {} s\nNumber of readings: {}\n".format(wait, interval, nureadings))
 
-def measure(list_of_hps, mode):
+def measure(list_of_hps, mode, osc, osc1, osc2):
     hp0 = list_of_hps[0]
-    hp0.measure(mode)
+    hp0.measure(me = mode, osc = osc, osc1 = osc1, osc2 = osc2)
     meas = dict()
     for hp in list_of_hps:
-        meas[hp.param] = hp.get_res()
+        if hp.cd not in ['VS', 'Vs', 'vs', '2', 2]:
+            meas[hp.param] = hp.get_res()
     print(meas)
     return meas
