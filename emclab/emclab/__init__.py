@@ -10,5 +10,4 @@ from .MSO7034B import MSO7034B
 from .HP5385A import HP5385A
 from .KeysightE3649A_functions import *
 from .MSO7034B_functions import *
-from .HP4145B_functions2 import *
 from .Agilent53132A import Agilent53132A

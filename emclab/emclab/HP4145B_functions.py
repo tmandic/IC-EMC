@@ -45,12 +45,15 @@ def list_setup(list_of_hps):
     print("Monitor channels:\n{}".format(str(lista).replace('[', '').replace(']', '')))
 
 def meas_setup(list_of_hps, interval = None, nureadings = None, wait = None):
-    hp0 = list_of_hps[0]
     if wait == None:
         wait = 0
-    hp0._dev.write("SM WT {}".format(wait))
-    hp0._dev.write("SM IN {}".format(interval))
-    hp0._dev.write("SM NR {}".format(nureadings))
+    if interval == None:
+        interval = float(input("Measurement interval: "))
+    if nureadings == None:
+        nureadings = int(input("Number of readings: "))
+    list_of_hps[0]._dev.write("SM WT {}".format(wait))
+    list_of_hps[0]._dev.write("SM IN {}".format(interval))
+    list_of_hps[0]._dev.write("SM NR {}".format(nureadings))
     for hp in list_of_hps:
         hp.wait = wait
         hp.interval = interval
@@ -60,7 +63,7 @@ def meas_setup(list_of_hps, interval = None, nureadings = None, wait = None):
 
 def measure(list_of_hps, mode, osc = None, osc1 = None, osc2 = None):
     hp0 = list_of_hps[0]
-    hp0.measure(me = mode, osc = osc, osc1 = osc1, osc2 = osc2)
+    hp0.measure(mode = mode, osc = osc, osc1 = osc1, osc2 = osc2)
     meas = dict()
     for hp in list_of_hps:
         if hp.cd not in ['VS', 'Vs', 'vs', '2', 2]:

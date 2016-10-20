@@ -12,10 +12,10 @@ def set_freqm():
     return list_of_fm
 
 def meas_freqm(fm):
-    freqm = dict()
-    freqm['CLK1'] = fm[0].meas_freq()
-    freqm['CLK2'] = fm[1].meas_freq()
-    freqm['BD1'] = fm[2].meas_width(1)
-    freqm['BD2'] = fm[3].meas_width(1)
+    freqm = list()
+    freqm.append(fm[0].meas_freq())
+    freqm.append(fm[1].meas_freq())
+    freqm.append(fm[2].meas_width(1))
+    freqm.append(fm[3].meas_width(1))
 
     return freqm

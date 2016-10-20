@@ -37,7 +37,8 @@ class Agilent53132A(GPIB):
 
         Returns frequency.
 
-        Input parameters:
+        Input parameters
+        ----------------
         chan - select channel:
         1, '1', 'A' or 2, '2', 'B'
         """
@@ -59,7 +60,8 @@ class Agilent53132A(GPIB):
 
         Returns attenuation.
 
-        Input parameters:
+        Input parameters
+        ----------------
         attn - atenuation level:
         1, '1' or 2, '2', 10, '10'
         """
@@ -89,7 +91,8 @@ class Agilent53132A(GPIB):
 
         Returns filter status.
 
-        Input parameters:
+        Input parameters
+        ----------------
         filt - filter turned on or off
         1, '1', 'off', 'Off', 'OFF' or 2, '2', 'on', 'On', 'ON'
         """
@@ -124,7 +127,8 @@ class Agilent53132A(GPIB):
 
         Returns channel number.
 
-        Input parameters:
+        Input parameters
+        ----------------
         chan - select channel:
         1, '1', 'A' or 2, '2', 'B'
 

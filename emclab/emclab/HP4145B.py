@@ -313,44 +313,37 @@ class HP4145B(GPIB):
             self._write_sent("\n")
 
     #===============================================================
-    def measure(self, me = None, osc = None, osc1 = None, osc2 = None):
+    def measure(self, mode = None):
         """Set the integration time.
 
         Input parameters
         ----------------
-        me: measure mode:
+        mode: measurement mode:
         1 - SINGLE
         2 - REPEAT
         3 - APPEND
         4 - STOP
 
-        param: parameter name you want to measure:
-        voltage name or current name (if available)
-
-        osc: optional parameter in case outer frequency meter devices are being used
-        [1, '1', 'on', 'ON'] - enabled
-
-        osc1 - optional - outer frequency meter
-        osc2 - optional - outer frequency meter
-
         """
-        if me == None:
-            me = input("Select:\n1 - SINGLE\n2 - REPEAT\n3 - APPEND\n4 - STOP\n")
+        if mode == None:
+            mode = input("Select:\n1 - SINGLE\n2 - REPEAT\n3 - APPEND\n4 - STOP\n")
 
-        if me in [1, "1", "single", "SINGLE"]:
-            me = 1
-            me_a = "SINGLE"
-        elif me in [2, "2", "repeat", "REPEAT"]:
-            me = 2
-            me_a = "REPEAT"
-        elif me in [3, "3", "append", "APPEND"]:
-            me = 3
-            me_a = "APPEND"
-        elif me in [4, "4", "stop", "STOP"]:
-            me = 4
-            me_a = "STOP"
+        if mode in [1, "1", "single", "SINGLE"]:
+            mode = 1
+            mode_a = "SINGLE"
+        elif mode in [2, "2", "repeat", "REPEAT"]:
+            mode = 2
+            mode_a = "REPEAT"
+        elif mode in [3, "3", "append", "APPEND"]:
+            mode = 3
+            mode_a = "APPEND"
+        elif mode in [4, "4", "stop", "STOP"]:
+            mode = 4
+            mode_a = "STOP"
         else:
             raise ValueError("Wrong input\n")
+
+        self.mode = mode
 
         if self.iname == None:
             param = self.vname
@@ -364,44 +357,14 @@ class HP4145B(GPIB):
 
         self.param = param
 
-        if osc not in [1, '1', 'on', 'ON']:
-            osc1 = None
-            osc2 = None
-
         self._timestamp()
-        sent = "Measuring of {} started in mode: {}\n".format(param, me_a)
+        sent = "Measuring of {} started in mode: {}\n".format(param, mode_a)
         sentence = self._sent + sent
         print(sentence)
         if self.fname != None:
             self._write_sent(sentence)
 
-        self._dev.write("MD ME{}".format(me))
-
-        ts = self.nureadings*self.interval + self.wait + 1
-
-        time.sleep(ts)
-
-        if (me == 2) and (osc in [1, '1', 'on', 'ON']):
-            f1 = osc1.meas_freq()
-            f2 = osc2.meas_freq()
-            testtime1 = time.time()
-            time.sleep(10)
-            while (((abs(osc1.meas_freq() - f1)) / f1)>10**(-3)) and (((abs(osc2.meas_freq()-f1))/f1)>10**(-3)):
-                f1 = osc1.meas_freq()
-                f2 = osc2.meas_freq()
-                time.sleep(5)
-                testtime2 = time.time()
-                if ((testtime2-testtime1)>60):
-                    print("Stabilization took longer than a minute, break program.\n")
-                    break
-            self._dev.write("MD ME4")
-
-        self._timestamp()
-        sent = "Measuring done.\n"
-        sentence = self._sent + sent
-        print(sentence)
-        if self.fname != None:
-            self._write_sent(sentence)
+        self._dev.write("MD ME{}".format(mode))
 
     #===============================================================
     def get_res(self):
@@ -428,7 +391,7 @@ class HP4145B(GPIB):
         time.sleep(1)
 
         string = self._dev.query("ENTER")
-
+        print("string: ", string)
         time.sleep(1)
 
         out = self._format_res(string)
@@ -470,14 +433,14 @@ class HP4145B(GPIB):
             raise ValueError("Wrong input.\n")
 
         self._timestamp()
-        sent = "Channel {}-{} turned of.\n".format(cd, channum)
+        sent = "Channel {}-{} turned off.\n".format(cd, channum)
         sentence = self._sent + sent
         print(sentence)
         if self.fname != None:
             self._write_sent(sentence)
 
     #===============================================================
-    def start(self, it = 1, ca = 1, dr = 0):
+    def start(self, it = 1, ca = 1, dr = 0, ts = 1):
         """Set up the wanted starting properties including integration time, auto calibration and the data ready bit.
         Clear the data output buffer after the previous operations.
 
@@ -499,12 +462,18 @@ class HP4145B(GPIB):
         1 - ON
         default: 0 - OFF
 
+        ts: Sleep time. Default is 1 s.
+
         """
-        time.sleep(2)
+        time.sleep(ts)
         self.integration_time(it = it)
+        time.sleep(ts)
         self.calibration(ca = ca)
+        time.sleep(ts)
         self.data_ready(dr = dr)
+        time.sleep(ts)
         self.buffer_clear()
+        time.sleep(ts)
 
         self._timestamp()
         sent = "Started the device.\n"

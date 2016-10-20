@@ -34,3 +34,14 @@ class Measurement(object):
         self.time_out = time.time()
 
         self.data[parameter] = data
+
+    #===============================================================
+    def add_list(self, parameter, data):
+        # update time of the first added measurement
+        if self.time_in is None:
+            self.time_in = time.time()
+
+        # update time of the last added measurement
+        self.time_out = time.time()
+
+        self.data[parameter] = data
