@@ -26,24 +26,32 @@ class DataCollector(object):
                  ['TIMESTAMP', ''],
                  ['ADDING_TIME', 's']]
 
-    # build index of variables and units
-    vars = dict()
-    units = dict()
-    for i, (var, unit) in enumerate(_meas_vars):
-        vars[var] = i
-        units[var] = unit
-
-    # define header
-    header = ','.join([var + " [" + unit + "]"
-                           for var, unit in _meas_vars])
-
     #===============================================================
-    def __init__(self):
+    def __init__(self, meas_vars = None):
         """Initialization.
 
+        Input parameters
+        ----------------
+        meas_vars: List of [var_name, var_unit] lists.
+        If given, the matrix is initialized using meas_vars.
+        If None, the matrix is initialized using DataCollector._meas_vars.
         """
 
-        ncol = len(self.vars)
+        if meas_vars is None:
+            meas_vars = self._meas_vars
+
+        # build index of variables and units
+        self._vars = dict()
+        self._units = dict()
+        for i, (var, unit) in enumerate(meas_vars):
+            self._vars[var] = i
+            self._units[var] = unit
+
+        # define header
+        self.header = ','.join([var + " [" + unit + "]"
+                                for var, unit in meas_vars])
+
+        ncol = len(self._vars)
         self.matrix = np.array([]).reshape(0, ncol)
 
     #===============================================================
@@ -53,22 +61,77 @@ class DataCollector(object):
         Input parameters
         ----------------
         meas: a Measurement object.
+
+        Notes
+        -----
+        If meas contains lists of N entries, appends the N measurements to
+        the last N measurements in the matrix.
+        Raises ValueError if data with no column is encountered.
+        Raises ValueError if all data for all keys in meas is not the same length.
+        Raises ValueError if self.matrix is too short for list data.
         """
 
-        new_data = np.zeros(len(self.vars))
+        # check if all data keys are in self._vars.keys()
+        error = False
+        for key in meas.data.keys():
+            if key not in self._vars.keys():
+                print("'" + key + "' not defined in DataCollector!")
+                error = True
+        if error:
+            raise ValueError("Some measured data not defined in DataCollector!")
 
-        for param, ind in self.vars.items():
-            if param in meas.data:
-                new_data[ind] = meas.data[param]
-            else:
-                new_data[ind] = np.nan
+        # parse through the data
+            # case 1: meas contains only scalars
+            # case 2: meas contains lists of equal length
 
-        # calculate the timestamp and adding time
-        new_data[self.vars['TIMESTAMP']] = meas.time_out
-        new_data[self.vars['ADDING_TIME']] = meas.time_out - meas.time_in
+        # list containing the number of entries in the meas lists
+        # 0 represents a scalar
+        numel = list()
+        for key in meas.data.keys():
+            try:
+                # case 2
+                numel.append(len(meas.data[key]))
+            except TypeError:
+                # case 1
+                numel.append(0)
 
-        # append new row to matrix
-        self.matrix = np.vstack((self.matrix, new_data))
+        # check data consistency
+        if not all([val == numel[0] for val in numel]):
+            raise ValueError("Data inconsistent!")
+
+        # get number of list entries (or 0 for scalar case)
+        N = numel[0]
+
+        if not N:
+            # define the new row
+            new_data = np.zeros(len(self._vars))
+
+            for param, col in self._vars.items():
+                if param in meas.data.keys():
+                    new_data[col] = meas.data[param]
+                else:
+                    new_data[col] = np.nan
+
+            # calculate the timestamp and adding time
+            new_data[self._vars['TIMESTAMP']] = meas.time_out
+            new_data[self._vars['ADDING_TIME']] = meas.time_out - meas.time_in
+
+            # append new row to matrix
+            self.matrix = np.vstack((self.matrix, new_data))
+
+        else:
+            # append data to the N last rows
+            if len(self.matrix) < N:
+                raise ValueError("Cannot append data to matrix!")
+
+            # parse through the data
+            for key in meas.data.keys():
+                col = self._vars[key]
+                self.matrix[-N:, col] = meas.data[key]
+
+            # check error message
+            if meas.error:
+                self.header = meas.error + "\n" + self.header
 
     #===============================================================
     def save(self, fname):
@@ -83,7 +146,7 @@ class DataCollector(object):
 
         # create output directory if it does not exist
         output_dir = os.path.dirname(fname)
-        if not os.path.exists(output_dir):
+        if output_dir and not os.path.exists(output_dir):
             os.mkdir(output_dir)
 
         # output CSV

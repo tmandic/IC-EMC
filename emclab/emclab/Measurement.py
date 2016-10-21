@@ -14,6 +14,7 @@ class Measurement(object):
 
         self.data = dict()
         self.time_in = None
+        self.error = ''
 
     #===============================================================
     def add(self, parameter, data):
@@ -33,15 +34,23 @@ class Measurement(object):
         # update time of the last added measurement
         self.time_out = time.time()
 
-        self.data[parameter] = data
+        # parse through the data
+            # case 1: data is a scalar
+            # case 2: data is a list
+            # case 3: data is a dict
+        try:
+            # case 3: find the error key (should be only one)
+            non_empty_keys = [key for key, val in data.items() if val]
+            assert len(non_empty_keys) == 1
+            key = non_empty_keys[0]
+
+            # collect the data
+            self.data[parameter] = data[key]
+
+            # store the error
+            self.error += key
+        except AttributeError:
+            # cases 1, 2
+            self.data[parameter] = data
 
     #===============================================================
-    def add_list(self, parameter, data):
-        # update time of the first added measurement
-        if self.time_in is None:
-            self.time_in = time.time()
-
-        # update time of the last added measurement
-        self.time_out = time.time()
-
-        self.data[parameter] = data
