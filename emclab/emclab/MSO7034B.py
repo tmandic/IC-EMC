@@ -54,7 +54,7 @@ class MSO7034B(GPIB):
         else:
             raise ValueError("Error")
 
-        sent = "The measured width of the pulse is: {}\n".format(width)
+        sent = "The measured width of the pulse is: {} m\n".format(width)
         sentence = self._sent + sent
         print(sentence)
         if self.fname != None:
@@ -70,7 +70,7 @@ class MSO7034B(GPIB):
         """
 
         freq = float(self._dev.query(':MEAS:FREQ?'))
-        sent = "The measured frequency is: {}\n".format(freq)
+        sent = "The measured frequency is: {} Hz\n".format(freq)
         sentence = self._sent + sent
         print(sentence)
         if self.fname != None:

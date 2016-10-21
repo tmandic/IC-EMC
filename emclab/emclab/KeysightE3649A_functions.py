@@ -2,12 +2,12 @@ import numpy as np
 import time
 from emclab import KeysightE3649A
 
-def set_vdd(fname = None):
-    VDD = init_dev(1, fname)
+def set_volt(fname = None):
+    vdd = init_dev(1, fname)
 
-    set_volt(VDD)
+    setup_volt(vdd)
 
-    return VDD
+    return vdd
 
 def init_dev(dev = None, fname = None):
     if dev == None:
@@ -22,7 +22,7 @@ def init_dev(dev = None, fname = None):
         raise ValueError("Please enter a valid input\n")
     return inst
 
-def set_volt(inst):
+def setup_volt(inst):
     if (inst.addr == 5) and (inst.chan == 1):
         inst.set_both(3.3, 0.4)
     elif (inst.addr == 5) and (inst.chan == 2):
@@ -32,5 +32,5 @@ def set_volt(inst):
     else:
         raise ValueError("Please enter a valid input\n")
 
-def meas_vdd(inst, input_matrix = None):
+def meas_volt(inst):
     return inst.voltage()

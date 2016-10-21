@@ -391,7 +391,7 @@ class HP4145B(GPIB):
         time.sleep(1)
 
         string = self._dev.query("ENTER")
-        print("string: ", string)
+
         time.sleep(1)
 
         out = self._format_res(string)
@@ -1079,18 +1079,8 @@ class HP4145B(GPIB):
                     break
                 marker = None
                 lista = list()
-            elif s == 'N':
-                marker = 'N'
-            elif s == 'L':
-                marker = 'L'
-            elif s == 'V':
-                marker = 'V'
-            elif s == 'X':
-                marker = 'X'
-            elif s == 'C':
-                marker = 'C'
-            elif s == 'T':
-                marker = 'T'
+            elif s in ['N', 'L', 'V', 'X', 'C', 'T']:
+                marker = s
             else:
                 lista.append(str(s))
 
