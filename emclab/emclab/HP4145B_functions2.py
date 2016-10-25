@@ -77,11 +77,11 @@ params_ron0 = {
     'cd'                : 'vs',
     'channum'           : 1,
     'vname'             : 'RON',
-    'sourcefunction'    : 'CONST',
+    'sourcefunction'    : 'CONST'
 }
 
 params_hp_ron0 = {
-    'outval'        : 0,
+    'outval'        : 0
 }
 
 #b) smu channel vs1
@@ -91,11 +91,11 @@ params_ron1 = {
     'cd'                : 'vs',
     'channum'           : 1,
     'vname'             : 'RON',
-    'sourcefunction'    : 'CONST',
+    'sourcefunction'    : 'CONST'
 }
 
 params_hp_ron1 = {
-    'outval'        : 3.3,
+    'outval'        : 3.3
 }
 
 def set_spa(ron = None):

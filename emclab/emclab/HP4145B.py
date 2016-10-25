@@ -64,8 +64,6 @@ class HP4145B(GPIB):
 
         self._sent = str(self.name) + "\nTime: " + str(self.time) + "\nAddress: " + str(self.addr) + "\n"
 
-        self.start()
-
         self.chan_def(cd = cd, channum = channum, vname = vname, sourcefunction = sourcefunction, iname = iname, sourcemode = sourcemode)
 
     #===============================================================

@@ -4,6 +4,7 @@ def open_channels(list_of_params):
     # turn off all channels
     params = list_of_params[0]
     hp = HP4145B(**params)
+    hp.start()
     for i in range(1, 5):
         hp.turn_off_chan(cd = 'smu', channum = i)
         if i in [1,2]:

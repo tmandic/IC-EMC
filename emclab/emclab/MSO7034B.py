@@ -97,7 +97,7 @@ class MSO7034B(GPIB):
 
         self.chan = chan
 
-        self._sent = "Time: " + str(self.time) + "\nAddress: " + str(self.addr) + "\nChannel: " + str(self.chan) + "\n\n"
+        self._sent = str(self.name) + "\nTime: " + str(self.time) + "\nAddress: " + str(self.addr) + "\nChannel: " + str(self.chan) + "\n\n"
 
         self._dev.write(':MEASURE:SOURCE CHANNEL{}'.format(chan))
         sent = "The selected channel is: {}\n".format(chan)
