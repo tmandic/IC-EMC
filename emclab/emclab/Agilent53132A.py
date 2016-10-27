@@ -46,6 +46,9 @@ class Agilent53132A(GPIB):
 
         freq = float(self._dev.query("READ:FREQ?"))
 
+        self._timestamp()
+        self._sent = self._sent1 + str(self.time) + self._sent2
+
         sent = "The measured frequency is: {} Hz.\n".format(freq)
         sentence = self._sent + sent
         print(sentence)
@@ -77,6 +80,8 @@ class Agilent53132A(GPIB):
 
         self._dev.write(':INP{}:ATT {}'.format(self.chan,attn))
         sent = "Attenuation has been set to: {}\n".format(attn)
+        self._timestamp()
+        self._sent = self._sent1 + str(self.time) + self._sent2
         sentence = self._sent + sent
         print(sentence)
         if self.fname != None:
@@ -111,6 +116,8 @@ class Agilent53132A(GPIB):
 
         self._dev.write(':INPut{}:FILT {}'.format(self.chan, filts))
         sent = "A-Input 100 kHz LPF is set to: {}.\n".format(filt)
+        self._timestamp()
+        self._sent = self._sent1 + str(self.time) + self._sent2
         sentence = self._sent + sent
         print(sentence)
         if self.fname != None:
@@ -145,8 +152,9 @@ class Agilent53132A(GPIB):
 
         self.chan = chan
 
-        self._sent = "Time: " + str(self.time) + "\nAddress: " + str(self.addr) + "\nChannel: " + str(self.chan) + "\n"
-
+        self._sent1 = str(self.name) + "\nTime: "
+        self._sent2 = "\nAddress: " + str(self.addr) + "\nChannel: " + str(self.chan) + "\n\n"
+        self._sent = self._sent1 + str(self.time) + self._sent2
         sent = "The selected channel is: {}\n".format(chan)
         sentence = self._sent + sent
         print(sentence)

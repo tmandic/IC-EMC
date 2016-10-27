@@ -6,7 +6,7 @@ from emclab import KeysightE3649A
 params_kleft1 = {
     'addr'              : 5,
     'channel'           : 1,
-    'fname'             : 'volt_proba'
+    'fname'             : 'volt_log'
 }
 
 params_out_kleft1= {
@@ -18,7 +18,7 @@ params_out_kleft1= {
 params_kleft2 = {
     'addr'              : 5,
     'channel'           : 2,
-    'fname'             : 'volt_proba'
+    'fname'             : 'volt_log'
 }
 
 params_out_kleft2 = {
@@ -30,7 +30,7 @@ params_out_kleft2 = {
 params_kright1 = {
     'addr'              : 6,
     'channel'           : 1,
-    'fname'             : 'volt_proba'
+    'fname'             : 'volt_log'
 }
 
 params_out_kright1= {
@@ -42,7 +42,7 @@ params_out_kright1= {
 params_kright2 = {
     'addr'              : 6,
     'channel'           : 2,
-    'fname'             : 'volt_proba'
+    'fname'             : 'volt_log'
 }
 
 params_out_kright2= {

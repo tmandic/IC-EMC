@@ -57,7 +57,7 @@ class MSO7034B(GPIB):
 
         self._sent = self._sent1 + str(self.time) + self._sent2
 
-        sent = "The measured width of the pulse is: {} m\n".format(width)
+        sent = "The measured width of the pulse is: {} s\n".format(width)
         sentence = self._sent + sent
         print(sentence)
         if self.fname != None:

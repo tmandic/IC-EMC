@@ -121,13 +121,14 @@ class DataCollector(object):
 
         else:
             # append data to the N last rows
-            if len(self.matrix) < N:
-                raise ValueError("Cannot append data to matrix!")
+##            if len(self.matrix) < N:
+##                raise ValueError("Cannot append data to matrix!")
+            N_add = min(len(self.matrix), N)
 
             # parse through the data
             for key in meas.data.keys():
                 col = self._vars[key]
-                self.matrix[-N:, col] = meas.data[key]
+                self.matrix[-N_add:, col] = meas.data[key][:N_add]
 
             # check error message
             if meas.error:
