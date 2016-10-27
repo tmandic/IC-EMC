@@ -53,6 +53,9 @@ class MSO7034B(GPIB):
             width = float(self._dev.query(':MEASure:NWIDth?'))
         else:
             raise ValueError("Error")
+        self._timestamp()
+
+        self._sent = self._sent1 + str(self.time) + self._sent2
 
         sent = "The measured width of the pulse is: {} m\n".format(width)
         sentence = self._sent + sent
@@ -70,6 +73,8 @@ class MSO7034B(GPIB):
         """
 
         freq = float(self._dev.query(':MEAS:FREQ?'))
+        self._timestamp()
+        self._sent = self._sent1 + str(self.time) + self._sent2
         sent = "The measured frequency is: {} Hz\n".format(freq)
         sentence = self._sent + sent
         print(sentence)
@@ -97,10 +102,12 @@ class MSO7034B(GPIB):
 
         self.chan = chan
 
-        self._sent = str(self.name) + "\nTime: " + str(self.time) + "\nAddress: " + str(self.addr) + "\nChannel: " + str(self.chan) + "\n\n"
+        self._sent1 = str(self.name) + "\nTime: "
+        self._sent2 = "\nAddress: " + str(self.addr) + "\nChannel: " + str(self.chan) + "\n\n"
 
         self._dev.write(':MEASURE:SOURCE CHANNEL{}'.format(chan))
         sent = "The selected channel is: {}\n".format(chan)
+        self._sent = self._sent1 + str(self.time) + self._sent2
         sentence = self._sent + sent
         print(sentence)
         if self.fname != None:

@@ -11,3 +11,4 @@ from .HP5385A import HP5385A
 from .KeysightE3649A_functions import *
 from .MSO7034B_functions import *
 from .Agilent53132A import Agilent53132A
+from .emclab_axes import emclab_axes

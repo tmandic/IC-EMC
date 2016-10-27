@@ -18,12 +18,15 @@ class HP5385A(GPIB):
         rm = visa.ResourceManager()
         self._dev = rm.open_resource('GPIB0::' + str(addr) + '::INSTR')
 
+        # initialize
+        self._dev.write('IN')
+
         # get instrument address
 
         self.addr = addr
 
         # get instrument name
-        self.name = self._name()
+        #self.name = self._name()
 
         self._timestamp()
 
@@ -41,8 +44,8 @@ class HP5385A(GPIB):
         chan - select channel:
         1, '1', 'A' or 2, '2', 'B'
         """
-        self._dev.write('"FU{}"'.format(self.chan))
-        freq = self._dev.query('ENTER')
+        self._dev.write('FU{}'.format(self.chan))
+        freq = self._dev.query('ENTER ')
 
         sent = "The measured frequency is: {} Hz.\n".format(freq)
         sentence = self._sent + sent
@@ -74,7 +77,7 @@ class HP5385A(GPIB):
         else:
             raise ValueError("Please enter a valid input\n")
 
-        self._dev.write('"AT{}"'.format(attnl))
+        self._dev.write('AT{}'.format(attnl))
         sent = "Attenuation has been set to: {}\n".format(attn)
         sentence = self._sent + sent
         print(sentence)
@@ -106,7 +109,7 @@ class HP5385A(GPIB):
         else:
             raise ValueError("Please enter a valid input\n")
 
-        self._dev.write('"FI{}"'.format(filts))
+        self._dev.write('FI{}'.format(filts))
         sent = "A-Input 100 kHz LPF is set to: {}.\n".format(filt)
         sentence = self._sent + sent
         print(sentence)
@@ -117,11 +120,11 @@ class HP5385A(GPIB):
 
     #===============================================================
     def initial(self):
-        """Resets abd gi ti Default state.
+        """Resets and go to default state.
 
         """
 
-        self._dev.write('"IN"')
+        self._dev.write('IN')
         sent = "Device has been reset.\n"
         sentence = self._sent + sent
         print(sentence)
