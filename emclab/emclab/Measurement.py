@@ -39,16 +39,20 @@ class Measurement(object):
             # case 2: data is a list
             # case 3: data is a dict
         try:
-            # case 3: find the error key (should be only one)
+            # case 3: find the error key.
+            # If there is more than one key, take the key with the most data.
             non_empty_keys = [key for key, val in data.items() if val]
-            assert len(non_empty_keys) == 1
-            key = non_empty_keys[0]
+            non_empty_lens = [len(data[key]) for key in non_empty_keys]
+            ind = non_empty_lens.index(max(non_empty_lens))
+
+            key = non_empty_keys[ind]
 
             # collect the data
             self.data[parameter] = data[key]
 
             # store the error
-            self.error += key
+            if key != 'N':
+                self.error += key
         except AttributeError:
             # cases 1, 2
             self.data[parameter] = data

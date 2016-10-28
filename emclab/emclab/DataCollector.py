@@ -1,6 +1,7 @@
 import numpy as np
 import os
 import time
+from copy import deepcopy
 
 #===============================================================
 class DataCollector(object):
@@ -71,6 +72,9 @@ class DataCollector(object):
         Raises ValueError if self.matrix is too short for list data.
         """
 
+        # make a copy of meas
+        meas = deepcopy(meas)
+
         # check if all data keys are in self._vars.keys()
         error = False
         for key in meas.data.keys():
@@ -95,9 +99,13 @@ class DataCollector(object):
                 # case 1
                 numel.append(0)
 
-        # check data consistency
-        if not all([val == numel[0] for val in numel]):
-            raise ValueError("Data inconsistent!")
+##        # check data consistency
+##        if not all([val == numel[0] for val in numel]):
+##            raise ValueError("Data inconsistent!")
+        # if all data does not have the same length, crop the first entries
+        N_crop = min(numel)
+        for key in meas.data.keys():
+            meas.data[key] = meas.data[key][-N_crop:]
 
         # get number of list entries (or 0 for scalar case)
         N = numel[0]
