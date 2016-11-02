@@ -110,6 +110,8 @@ class KeysightE3649A(GPIB):
 
         if volt is None:
             U = float(self._dev.query('MEAS:VOLT?'))
+            self._timestamp()
+            self._sent = self._sent1 + str(self.time) + self._sent2
             sentence = self._sent + "The measured voltage is: " + str(U) + "V.\n\n"
             print(sentence)
             if self.fname != None:
@@ -137,6 +139,8 @@ class KeysightE3649A(GPIB):
 
         if max_curr is None:
             I = float(self._dev.query('MEAS:CURR?'))
+            self._timestamp()
+            self._sent = self._sent1 + str(self.time) + self._sent2
             sentence = self._sent + "The measured current is: " + str(I) + "A.\n\n"
             print(sentence)
             if self.fname != None:
@@ -163,6 +167,8 @@ class KeysightE3649A(GPIB):
             else:
                 raise ValueError("Please select 1 ('l'; 'low') or 2 ('h'; 'high').\n")
         out = self._dev.query('VOLT:RANG?')
+        self._timestamp()
+        self._sent = self._sent1 + str(self.time) + self._sent2
         if out.startswith('P35V'):
             sentence = self._sent + "Low range: 35V.\n\n"
             print(sentence)
@@ -197,6 +203,8 @@ class KeysightE3649A(GPIB):
                 raise ValueError("prot should be between 1 V and 66 V.")
             self._dev.write('VOLT:PROT ', '%f' % prot)
         out = self._dev.query('VOLT:PROT?')
+        self._timestamp()
+        self._sent = self._sent1 + str(self.time) + self._sent2
         sentence = self._sent + "The overvoltage protection is set to:" + str(out) + "V.\n\n"
         print(sentence)
         if self.fname != None:
@@ -204,18 +212,24 @@ class KeysightE3649A(GPIB):
 
         if state in [1, 'on']:
             self._dev.write('VOLT:PROT:STAT 1')
+            self._timestamp()
+            self._sent = self._sent1 + str(self.time) + self._sent2
             sentence = self._sent + "Overvoltage protection is on.\n\n"
             print(sentence)
             if self.fname != None:
                 self._write_sent(sentence)
         elif state in [0, 'off'] :
             self._dev.write('VOLT:PROT:STAT 0')
+            self._timestamp()
+            self._sent = self._sent1 + str(self.time) + self._sent2
             sentence = self._sent + "Overvoltage protection is off.\n\n"
             print(sentence)
             if self.fname != None:
                 self._write_sent(sentence)
         elif state == None:
             o = self._dev.query('VOLT:PROT:STAT?')
+            self._timestamp()
+            self._sent = self._sent1 + str(self.time) + self._sent2
             if o.startswith('1'):
                 sentence = self._sent + "Overvoltage protection is on.\n\n"
                 print(sentence)
@@ -249,8 +263,8 @@ class KeysightE3649A(GPIB):
 
         self._timestamp()
 
-        self._sent = str(self.name) + "\nTime: " + str(self.time) + "\nAddress: " + str(self.addr) + \
-                     "\nChannel: " + str(self.chan) + "\n"
+        self._sent1 = str(self.name) + "\nTime: "
+        self._sent2 = "\nAddress: " + str(self.addr) + "\nChannel: " + str(self.chan) + "\n"
 
         if self.chan in [1, 'l', 'left']:
             self.chan = 1
@@ -285,11 +299,15 @@ class KeysightE3649A(GPIB):
         time.sleep(sleeptime)
 
         U = float(self._dev.query('MEAS:VOLT?'))
+        self._timestamp()
+        self._sent = self._sent1 + str(self.time) + self._sent2
         sentence = self._sent + "Voltage stabilized to " + str(U) + "V.\n\n"
         print(sentence)
         if self.fname != None:
             self._write_sent(sentence)
         I = float(self._dev.query('MEAS:CURR?'))
+        self._timestamp()
+        self._sent = self._sent1 + str(self.time) + self._sent2
         sentence = self._sent + "Current stabilized to " + str(I) +  "A.\n\n"
         print(sentence)
         if self.fname != None:

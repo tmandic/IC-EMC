@@ -15,7 +15,7 @@ def meas_freqm1(fm):
     freqm = list()
     freqm.append(fm[0].meas_freq())
     freqm.append(fm[1].meas_freq())
-    freqm.append(fm[2].meas_width(1))
-    freqm.append(fm[3].meas_width(1))
+    freqm.append(fm[2].pwidth)
+    freqm.append(fm[3].pwidth)
 
     return freqm

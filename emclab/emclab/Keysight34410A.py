@@ -28,7 +28,8 @@ class Keysight34410A(GPIB):
 
         self._timestamp()
 
-        self._sent = str(self.name) + "\nTime: " + str(self.time) + "\nAddress: " + str(self.addr) + "\n"
+        self._sent1 = str(self.name) + "\nTime: "
+        self._sent2 = "\nAddress: " + str(self.addr) + "\n"
 
     #===============================================================
     def get_volt(self, acdc = None):
@@ -50,6 +51,7 @@ class Keysight34410A(GPIB):
         else:
             raise ValueError("Error")
         self._timestamp()
+        self._sent = self._sent1 + str(self.time) + self._sent2
         sentence = self._sent + "The voltage is: " + str(u) + "V.\n\n"
         print(sentence)
         if self.fname != None:
@@ -80,6 +82,7 @@ class Keysight34410A(GPIB):
                 autotest = float(self._dev.query('VOLT:RANG:AUTO?'))
                 rangetest = float(self._dev.query('VOLT:RANG?'))
                 self._timestamp()
+                self._sent = self._sent1 + str(self.time) + self._sent2
                 if autotest == 1:
                     sentence = self._sent + "DC voltage range is set to: AUTO.\n\n"
                     print(sentence)
@@ -94,6 +97,7 @@ class Keysight34410A(GPIB):
                 autotest = float(self._dev.query('VOLT:RANG:AUTO?'))
                 if autotest == 1:
                     self._timestamp()
+                    self._sent = self._sent1 + str(self.time) + self._sent2
                     sentence = self._sent + "DC voltage range is set to: AUTO.\n\n"
                     print(sentence)
                     if self.fname != None:
@@ -104,6 +108,7 @@ class Keysight34410A(GPIB):
                 self._dev.write('VOLT:RANG ', '%f' % float(rang))
                 rangetest = float(self._dev.query('VOLT:RANG?'))
                 self._timestamp()
+                self._sent = self._sent1 + str(self.time) + self._sent2
                 sentence = self._sent + "DC voltage range is set to: " + str(rangetest) + "V.\n\n"
                 print(sentence)
                 if self.fname != None:
@@ -113,6 +118,7 @@ class Keysight34410A(GPIB):
                 autotest = float(self._dev.query('VOLT:AC:RANG:AUTO?'))
                 rangetest = float(self._dev.query('VOLT:AC:RANG?'))
                 self._timestamp()
+                self._sent = self._sent1 + str(self.time) + self._sent2
                 if autotest == 1:
                     sentence = self._sent + "AC voltage range is set to: AUTO.\n\n"
                     print(sentence)
@@ -128,6 +134,7 @@ class Keysight34410A(GPIB):
                 autotest = float(self._dev.query('VOLT:AC:RANG:AUTO?'))
                 if autotest == 1:
                     self._timestamp()
+                    self._sent = self._sent1 + str(self.time) + self._sent2
                     sentence = self._sent + "AC voltage range is set to: AUTO.\n\n"
                     print(sentence)
                     if self.fname != None:
@@ -138,6 +145,7 @@ class Keysight34410A(GPIB):
                 self._dev.write('VOLT:AC:RANG ', '%f' % float(rang))
                 rangetest = float(self._dev.query('VOLT:AC:RANG?'))
                 self._timestamp()
+                self._sent = self._sent1 + str(self.time) + self._sent2
                 sentence = self._sent + "AC voltage range is set to: " + str(rangetest) + "V.\n\n"
                 print(sentence)
                 if self.fname != None:
@@ -167,6 +175,7 @@ class Keysight34410A(GPIB):
             atest = float(self._dev.query('VOLT:APER:ENABLED?'))
             ntest = float(self._dev.query('VOLT:NPLC?'))
             self._timestamp()
+            self._sent = self._sent1 + str(self.time) + self._sent2
             if atest == 1:
                 atest2 = float(self._dev.query('VOLT:APER?'))
                 sentence = self._sent + "Voltage integration mode: APERTURE\nTime: " + str(atest2) + "s.\n\n"
@@ -179,17 +188,23 @@ class Keysight34410A(GPIB):
                 if self.fname != None:
                     self._write_sent(sentence)
         elif typ in [1, '1', 'NPLC', 'nplc']:
+            if val == None:
+                val = float(input("Enter the wanted time parameter for integration mode: "))
             self._dev.write('VOLT:NPLC ', '%f' % float(val))
             ntest = float(self._dev.query('VOLT:NPLC?'))
             self._timestamp()
+            self._sent = self._sent1 + str(self.time) + self._sent2
             sentence = self._sent + "Voltage integration mode: NPLC\nTime: " + str(ntest) + "s.\n\n"
             print(sentence)
             if self.fname != None:
                 self._write_sent(sentence)
         elif typ in [2, '2', 'APERTURE', 'aperture']:
+            if val == None:
+                val = float(input("Enter the wanted time parameter for integration mode: "))
             self._dev.write('VOLT:APER ', '%f' % float(val))
             atest2 = float(self._dev.query('VOLT:APER?'))
             self._timestamp()
+            self._sent = self._sent1 + str(self.time) + self._sent2
             sentence = self._sent + "Voltage integration mode: APERTURE\nTime: " + str(atest2) + "s.\n\n"
             print(sentence)
             if self.fname != None:
@@ -218,6 +233,7 @@ class Keysight34410A(GPIB):
         else:
             raise ValueError("Error")
         self._timestamp()
+        self._sent = self._sent1 + str(self.time) + self._sent2
         sentence = self._sent + "The current is: " + str(i) + "A.\n\n"
         print(sentence)
         if self.fname != None:
@@ -248,6 +264,7 @@ class Keysight34410A(GPIB):
                 autotest = float(self._dev.query('CURR:RANG:AUTO?'))
                 rangetest = float(self._dev.query('CURR:RANG?'))
                 self._timestamp()
+                self._sent = self._sent1 + str(self.time) + self._sent2
                 if autotest == 1:
                     sentence = self._sent + "DC current range is set to: AUTO.\n\n"
                     print(sentence)
@@ -263,6 +280,7 @@ class Keysight34410A(GPIB):
                 autotest = float(self._dev.query('CURR:RANG:AUTO?'))
                 if autotest == 1:
                     self._timestamp()
+                    self._sent = self._sent1 + str(self.time) + self._sent2
                     sentence = self._sent + "DC current range is set to: AUTO.\n\n"
                     print(sentence)
                     if self.fname != None:
@@ -273,6 +291,7 @@ class Keysight34410A(GPIB):
                 self._dev.write('CURR:RANG ', '%f' % float(rang))
                 rangetest = float(self._dev.query('CURR:RANG?'))
                 self._timestamp()
+                self._sent = self._sent1 + str(self.time) + self._sent2
                 sentence = self._sent + "DC current range is set to: " + str(rangetest) + "A.\n\n"
                 print(sentence)
                 if self.fname != None:
@@ -282,6 +301,7 @@ class Keysight34410A(GPIB):
                 autotest = float(self._dev.query('CURR:AC:RANG:AUTO?'))
                 rangetest = float(self._dev.query('CURR:AC:RANG?'))
                 self._timestamp()
+                self._sent = self._sent1 + str(self.time) + self._sent2
                 if autotest == 1:
                     sentence = self._sent + "AC current range is set to: AUTO.\n\n"
                     print(sentence)
@@ -297,6 +317,7 @@ class Keysight34410A(GPIB):
                 autotest = float(self._dev.query('CURR:AC:RANG:AUTO?'))
                 if autotest == 1:
                     self._timestamp()
+                    self._sent = self._sent1 + str(self.time) + self._sent2
                     sentence = self._sent + "AC current range is set to: AUTO.\n\n"
                     print(sentence)
                     if self.fname != None:
@@ -307,6 +328,7 @@ class Keysight34410A(GPIB):
                 self._dev.write('CURR:AC:RANG ', '%f' % float(rang))
                 rangetest = float(self._dev.query('CURR:AC:RANG?'))
                 self._timestamp()
+                self._sent = self._sent1 + str(self.time) + self._sent2
                 sentence = self._sent + "AC current range is set to: " + str(rangetest) + "A.\n\n"
                 print(sentence)
                 if self.fname != None:
@@ -338,28 +360,36 @@ class Keysight34410A(GPIB):
             if atest == 1:
                 atest2 = float(self._dev.query('CURR:APER?'))
                 self._timestamp()
+                self._sent = self._sent1 + str(self.time) + self._sent2
                 sentence = self._sent + "Current integration mode: APERTURE\nTime: " + str(atest2) + "s.\n\n"
                 print(sentence)
                 if self.fname != None:
                     self._write_sent(sentence)
             else:
                 self._timestamp()
+                self._sent = self._sent1 + str(self.time) + self._sent2
                 sentence = self._sent + "Current integration mode: NPLC\nTime: " + str(ntest) + "s.\n\n"
                 print(sentence)
                 if self.fname != None:
                     self._write_sent(sentence)
         elif typ in [1, '1', 'NPLC', 'nplc']:
+            if val == None:
+                val = float(input("Enter the wanted time parameter for integration mode: "))
             self._dev.write('CURR:NPLC ', '%f' % float(val))
             ntest = float(self._dev.query('CURR:NPLC?'))
             self._timestamp()
+            self._sent = self._sent1 + str(self.time) + self._sent2
             sentence = self._sent + "Current integration mode: NPLC\nTime: " + str(ntest) + "s.\n\n"
             print(sentence)
             if self.fname != None:
                 self._write_sent(sentence)
         elif typ in [2, '2', 'APERTURE', 'aperture']:
+            if val == None:
+                val = float(input("Enter the wanted time parameter for integration mode: "))
             self._dev.write('CURR:APER ', '%f' % float(val))
             atest2 = float(self._dev.query('CURR:APER?'))
             self._timestamp()
+            self._sent = self._sent1 + str(self.time) + self._sent2
             sentence = self._sent + "Current integration mode: APERTURE\nTime: " + str(atest2) + "s.\n\n"
             print(sentence)
             if self.fname != None:
@@ -374,6 +404,7 @@ class Keysight34410A(GPIB):
         """
         r = float(self._dev.query('MEAS:RES?'))
         self._timestamp()
+        self._sent = self._sent1 + str(self.time) + self._sent2
         sentence = self._sent + "The resistance is: " + str(r) + "ohms.\n\n"
         print(sentence)
         if self.fname != None:
@@ -397,6 +428,7 @@ class Keysight34410A(GPIB):
             autotest = float(self._dev.query('RES:RANG:AUTO?'))
             rangetest = float(self._dev.query('RES:RANG?'))
             self._timestamp()
+            self._sent = self._sent1 + str(self.time) + self._sent2
             if autotest == 1:
                 sentence = self._sent + "Resistance range is set to: AUTO.\n\n"
                 print(sentence)
@@ -411,6 +443,7 @@ class Keysight34410A(GPIB):
             autotest = float(self._dev.query('RES:RANG:AUTO?'))
             if autotest == 1:
                 self._timestamp()
+                self._sent = self._sent1 + str(self.time) + self._sent2
                 sentence = self._sent + "Resistance range is set to: AUTO.\n\n"
                 print(sentence)
                 if self.fname != None:
@@ -421,6 +454,7 @@ class Keysight34410A(GPIB):
             self._dev.write('RES:RANG ', '%f' % float(rang))
             rangetest = float(self._dev.query('RES:RANG?'))
             self._timestamp()
+            self._sent = self._sent1 + str(self.time) + self._sent2
             sentence = self._sent + "Resistance range is set to: " + str(rangetest) + "ohms.\n\n"
             print(sentence)
             if self.fname != None:
@@ -450,28 +484,36 @@ class Keysight34410A(GPIB):
             if atest == 1:
                 atest2 = float(self._dev.query('RES:APER?'))
                 self._timestamp()
+                self._sent = self._sent1 + str(self.time) + self._sent2
                 sentence = self._sent + "Resistance integration mode: APERTURE\nTime: " + str(atest2) + "s.\n\n"
                 print(sentence)
                 if self.fname != None:
                     self._write_sent(sentence)
             else:
                 self._timestamp()
+                self._sent = self._sent1 + str(self.time) + self._sent2
                 sentence = self._sent + "Resistance integration mode: NPLC\nTime: " + str(ntest) + "s.\n\n"
                 print(sentence)
                 if self.fname != None:
                     self._write_sent(sentence)
         elif typ in [1, '1', 'NPLC', 'nplc']:
+            if val == None:
+                val = float(input("Enter the wanted time parameter for integration mode: "))
             self._dev.write('RES:NPLC ', '%f' % float(val))
             ntest = float(self._dev.query('RES:NPLC?'))
             self._timestamp()
+            self._sent = self._sent1 + str(self.time) + self._sent2
             sentence = self._sent + "Resistance integration mode: NPLC\nTime: " + str(ntest) + "s.\n\n"
             print(sentence)
             if self.fname != None:
                 self._write_sent(sentence)
         elif typ in [2, '2', 'APERTURE', 'aperture']:
+            if val == None:
+                val = float(input("Enter the wanted time parameter for integration mode: "))
             self._dev.write('RES:APER ', '%f' % float(val))
             atest2 = float(self._dev.query('RES:APER?'))
             self._timestamp()
+            self._sent = self._sent1 + str(self.time) + self._sent2
             sentence = self._sent + "Resistance integration mode: APERTURE\nTime: " + str(atest2) + "s.\n\n"
             print(sentence)
             if self.fname != None:
@@ -486,6 +528,7 @@ class Keysight34410A(GPIB):
         """
         c = float(self._dev.query('MEAS:CAP?'))
         self._timestamp()
+        self._sent = self._sent1 + str(self.time) + self._sent2
         sentence = self._sent + "The capacitance is: " + str(c) + "F.\n\n"
         print(sentence)
         if self.fname != None:
@@ -509,6 +552,7 @@ class Keysight34410A(GPIB):
             autotest = float(self._dev.query('CAP:RANG:AUTO?'))
             rangetest = float(self._dev.query('CAP:RANG?'))
             self._timestamp()
+            self._sent = self._sent1 + str(self.time) + self._sent2
             if autotest == 1:
                 sentence = self._sent + "Capacitance range is set to: AUTO.\n\n"
                 print(sentence)
@@ -523,6 +567,7 @@ class Keysight34410A(GPIB):
             self._dev.write('CAP:RANG:AUTO ON')
             autotest = float(self._dev.query('CAP:RANG:AUTO?'))
             self._timestamp()
+            self._sent = self._sent1 + str(self.time) + self._sent2
             if autotest == 1:
                 sentence = self._sent + "Capacitance range is set to: AUTO.\n\n"
                 print(sentence)
@@ -534,10 +579,130 @@ class Keysight34410A(GPIB):
             self._dev.write('CAP:RANG ', '%f' % float(rang))
             rangetest = float(self._dev.query('CAP:RANG?'))
             self._timestamp()
+            self._sent = self._sent1 + str(self.time) + self._sent2
             sentence = self._sent + "Capacitance range is set to: " + str(rangetest) + "F.\n\n"
             print(sentence)
             if self.fname != None:
                 self._write_sent(sentence)
+
+    #===============================================================
+    def get_temp(self):
+        """Measures temperature.
+
+        Returns temperature.
+
+        """
+        t = float(self._dev.query('MEAS:TEMP?'))
+        self._timestamp()
+        self._sent = self._sent1 + str(self.time) + self._sent2
+        sent0 = " {}.\n\n".format(self.unit_string)
+        sentence = self._sent + "The temperature is: " + str(t) + sent0
+        print(sentence)
+        if self.fname != None:
+            self._write_sent(sentence)
+        return t
+
+    #===============================================================
+    def temp_unit(self, unit = None):
+        """Sets the temperature unit.
+
+        Returns temperature unit.
+
+        """
+        if unit == None:
+            unit0 = None
+        elif unit in [1, '1', 'C', '°C']:
+            unit0 = 'C'
+        elif unit in [2, '2', 'F', '°F']:
+            unit0 = 'F'
+        elif unit in [3, '3', 'K']:
+            unit0 = 'K'
+        else:
+            raise ValueError("Incorrect input.\n")
+
+        if unit != None:
+            self._dev.write('UNIT:TEMP {}'.format(unit0))
+
+        self.unit = self._dev.query('UNIT:TEMP?')
+
+        if self.unit != unit0:
+            raise ValueError("Error during temperature unit test.\n")
+
+        if self.unit == 'K':
+            self.unit_string = 'K'
+        elif self.unit in ['C', 'F']
+            self.unit_string = '°' + self.unit
+        else:
+            raise ValueError("Error during temperature unit test string setup.\n")
+
+        self._timestamp()
+        self._sent = self._sent1 + str(self.time) + self._sent2
+        sentence = self._sent + "The temperature unit is: " + self._unit_string
+        print(sentence)
+        if self.fname != None:
+            self._write_sent(sentence)
+        return self.unit
+
+    #===============================================================
+    def temp_int(self, typ = None, val = None):
+        """Set or examine the resistance INTEGRATION option of the multimeter.
+
+        Input parameters
+        ----------------
+        typ: determine the INTEGRATION option of the multimeter
+        1 or 'NPLC' or 'nplc' for NPLC; 2 or 'APERTURE' or 'aperture' for APERTURE;
+        in case of NPLC choose between the following(in seconds):
+        0.006, 0.02, 0.06, 0.2, 1, 2, 10, 100 (if another number is entered, the nearest one from
+        the previously listed will be taken as the voltage range).
+
+        val = time parameter needed to set NPLC or APERTURE mode;
+        in case of NPLC choose between the following(in seconds):
+        0.006, 0.02, 0.06, 0.2, 1, 2, 10, 100 (if another number is entered, the nearest one from
+        the previously listed will be taken as the time parameter).
+
+        """
+        if typ == None:
+            atest = float(self._dev.query('TEMP:APER:ENABLED?'))
+            ntest = float(self._dev.query('TEMP:NPLC?'))
+            if atest == 1:
+                atest2 = float(self._dev.query('TEMP:APER?'))
+                self._timestamp()
+                self._sent = self._sent1 + str(self.time) + self._sent2
+                sentence = self._sent + "Temperature integration mode: APERTURE\nTime: " + str(atest2) + "s.\n\n"
+                print(sentence)
+                if self.fname != None:
+                    self._write_sent(sentence)
+            else:
+                self._timestamp()
+                self._sent = self._sent1 + str(self.time) + self._sent2
+                sentence = self._sent + "Temperature integration mode: NPLC\nTime: " + str(ntest) + "s.\n\n"
+                print(sentence)
+                if self.fname != None:
+                    self._write_sent(sentence)
+        elif typ in [1, '1', 'NPLC', 'nplc']:
+            if val == None:
+                val = float(input("Enter the wanted time parameter for integration mode: "))
+            self._dev.write('TEMP:NPLC ', '%f' % float(val))
+            ntest = float(self._dev.query('TEMP:NPLC?'))
+            self._timestamp()
+            self._sent = self._sent1 + str(self.time) + self._sent2
+            sentence = self._sent + "Temperature integration mode: NPLC\nTime: " + str(ntest) + "s.\n\n"
+            print(sentence)
+            if self.fname != None:
+                self._write_sent(sentence)
+        elif typ in [2, '2', 'APERTURE', 'aperture']:
+            if val == None:
+                val = float(input("Enter the wanted time parameter for integration mode: "))
+            self._dev.write('TEMP:APER ', '%f' % float(val))
+            atest2 = float(self._dev.query('TEMP:APER?'))
+            self._timestamp()
+            self._sent = self._sent1 + str(self.time) + self._sent2
+            sentence = self._sent + "Temperature integration mode: APERTURE\nTime: " + str(atest2) + "s.\n\n"
+            print(sentence)
+            if self.fname != None:
+                self._write_sent(sentence)
+        else:
+            raise ValueError("Incorrect input.\n")
 
     #===============================================================
     def inputz(self, imp = None):
@@ -562,6 +727,7 @@ class Keysight34410A(GPIB):
             raise ValueError("Incorrect input.\n")
 
         self._timestamp()
+        self._sent = self._sent1 + str(self.time) + self._sent2
 
         if a == 0:
             sentence = self._sent + "The input impedance is: 10Mohm.\n\n"

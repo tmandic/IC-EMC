@@ -28,6 +28,8 @@ class HP5385A(GPIB):
         # get instrument name
         #self.name = self._name()
 
+        self.name = self._name()
+
         self._timestamp()
 
         self.fname = fname
@@ -47,7 +49,11 @@ class HP5385A(GPIB):
         self._dev.write('FU{}'.format(self.chan))
         freq = self._dev.query('ENTER ')
 
+        self._timestamp()
+        self._sent = self._sent1 + str(self.time) + self._sent2
+
         sent = "The measured frequency is: {} Hz.\n".format(freq)
+        self._sent = self._sent1 + str(self.time) + self._sent2
         sentence = self._sent + sent
         print(sentence)
         if self.fname != None:
@@ -78,6 +84,8 @@ class HP5385A(GPIB):
             raise ValueError("Please enter a valid input\n")
 
         self._dev.write('AT{}'.format(attnl))
+        self._timestamp()
+        self._sent = self._sent1 + str(self.time) + self._sent2
         sent = "Attenuation has been set to: {}\n".format(attn)
         sentence = self._sent + sent
         print(sentence)
@@ -110,6 +118,8 @@ class HP5385A(GPIB):
             raise ValueError("Please enter a valid input\n")
 
         self._dev.write('FI{}'.format(filts))
+        self._timestamp()
+        self._sent = self._sent1 + str(self.time) + self._sent2
         sent = "A-Input 100 kHz LPF is set to: {}.\n".format(filt)
         sentence = self._sent + sent
         print(sentence)
@@ -125,6 +135,8 @@ class HP5385A(GPIB):
         """
 
         self._dev.write('IN')
+        self._timestamp()
+        self._sent = self._sent1 + str(self.time) + self._sent2
         sent = "Device has been reset.\n"
         sentence = self._sent + sent
         print(sentence)
@@ -155,7 +167,11 @@ class HP5385A(GPIB):
 
         self.chan = chan
 
-        self._sent = "Time: " + str(self.time) + "\nAddress: " + str(self.addr) + "\nChannel: " + str(self.chan) + "\n"
+        self._sent1 = str(self.name) + "Time: "
+        self._sent2 = "\nAddress: " + str(self.addr) + "\nChannel: " + str(self.chan) + "\n"
+
+        self._timestamp()
+        self._sent = self._sent1 + str(self.time) + self._sent2
 
         sent = "The selected channel is: {}\n".format(chan)
         sentence = self._sent + sent

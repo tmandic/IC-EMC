@@ -62,7 +62,8 @@ class HP4145B(GPIB):
 
         self._timestamp()
 
-        self._sent = str(self.name) + "\nTime: " + str(self.time) + "\nAddress: " + str(self.addr) + "\n"
+        self._sent1 = str(self.name) + "\nTime: "
+        self._sent2 = "\nAddress: " + str(self.addr) + "\n"
 
         self.chan_def(cd = cd, channum = channum, vname = vname, sourcefunction = sourcefunction, iname = iname, sourcemode = sourcemode)
 
@@ -122,6 +123,7 @@ class HP4145B(GPIB):
             raise ValueError("Wrong input.\n")
 
         self._timestamp()
+        self._sent = self._sent1 + str(self.time) + self._sent2
 
         sent = "Channel {} - {} defined with the following parameters:\nVoltage name: {}".format(cd_a, self.channum, self.vname)
         sentence = self._sent + sent
@@ -229,6 +231,7 @@ class HP4145B(GPIB):
             raise ValueError("Error")
 
         self._timestamp()
+        self._sent = self._sent1 + str(self.time) + self._sent2
 
         if self.sourcemode_ss in [1, "1", "v", "V"]:
             sent = "Source {} - {} is set up with the following parameters:".format(self.vname, sf)
@@ -356,6 +359,7 @@ class HP4145B(GPIB):
         self.param = param
 
         self._timestamp()
+        self._sent = self._sent1 + str(self.time) + self._sent2
         sent = "Measuring of {} started in mode: {}\n".format(param, mode_a)
         sentence = self._sent + sent
         print(sentence)
@@ -395,6 +399,7 @@ class HP4145B(GPIB):
         out = self._format_res(string)
 
         self._timestamp()
+        self._sent = self._sent1 + str(self.time) + self._sent2
         sent = "The measurement of {} gave the following results:\n{}\n".format(self.param, out)
         sentence = self._sent + sent
         print(sentence)
@@ -431,6 +436,7 @@ class HP4145B(GPIB):
             raise ValueError("Wrong input.\n")
 
         self._timestamp()
+        self._sent = self._sent1 + str(self.time) + self._sent2
         sent = "Channel {}-{} turned off.\n".format(cd, channum)
         sentence = self._sent + sent
         print(sentence)
@@ -474,6 +480,7 @@ class HP4145B(GPIB):
         time.sleep(ts)
 
         self._timestamp()
+        self._sent = self._sent1 + str(self.time) + self._sent2
         sent = "Started the device.\n"
         sentence = self._sent + sent
         print(sentence)
@@ -511,6 +518,7 @@ class HP4145B(GPIB):
 
         self._dev.write("IT{}".format(it))
         self._timestamp()
+        self._sent = self._sent1 + str(self.time) + self._sent2
         sent = "Integration time has been set to mode: {}\n".format(it_a)
         sentence = self._sent + sent
         print(sentence)
@@ -542,6 +550,7 @@ class HP4145B(GPIB):
 
         self._dev.write("CA{}".format(ca))
         self._timestamp()
+        self._sent = self._sent1 + str(self.time) + self._sent2
         sent = "Auto calibration is {}\n".format(ca_a)
         sentence = self._sent + sent
         print(sentence)
@@ -578,6 +587,7 @@ class HP4145B(GPIB):
         """
         self._dev.write("BC")
         self._timestamp()
+        self._sent = self._sent1 + str(self.time) + self._sent2
         sent = "Data output buffer cleared.\n"
         sentence = self._sent + sent
         print(sentence)
@@ -1061,15 +1071,45 @@ class HP4145B(GPIB):
                 lista = lista.replace(' ', '')
                 if marker == 'N':
                     listn.append(float(lista))
+                    listl.append(0)
+                    listv.append(0)
+                    listx.append(0)
+                    listc.append(0)
+                    listt.append(0)
                 elif marker == 'L':
+                    listn.append(0)
                     listl.append(float(lista))
+                    listv.append(0)
+                    listx.append(0)
+                    listc.append(0)
+                    listt.append(0)
                 elif marker == 'V':
+                    listn.append(0)
+                    listl.append(0)
                     listv.append(float(lista))
+                    listx.append(0)
+                    listc.append(0)
+                    listt.append(0)
                 elif marker == 'X':
+                    listn.append(0)
+                    listl.append(0)
+                    listv.append(0)
                     listx.append(float(lista))
+                    listc.append(0)
+                    listt.append(0)
                 elif marker == 'C':
+                    listn.append(0)
+                    listl.append(0)
+                    listv.append(0)
+                    listx.append(0)
                     listc.append(float(lista))
+                    listt.append(0)
                 elif marker == 'T':
+                    listn.append(0)
+                    listl.append(0)
+                    listv.append(0)
+                    listx.append(0)
+                    listc.append(0)
                     listt.append(float(lista))
                 else:
                     raise ValueError("Error\n")
@@ -1089,7 +1129,37 @@ class HP4145B(GPIB):
         res['C'] = listc
         res['T'] = listt
 
-        if (len(res['L'])==0) and (len(res['V'])==0) and (len(res['X'])==0) and (len(res['C'])==0) and (len(res['T'])==0):
+        search == 0
+        for i in res['C']:
+            if i != 0:
+                search = 1
+                break
+
+        if search == 0:
+            for i in res['X']:
+                if i != 0:
+                    search = 1
+                    break
+
+        if search == 0:
+            for i in res['L']:
+                if i != 0:
+                    search = 1
+                    break
+
+        if search == 0:
+            for i in res['V']:
+                if i != 0:
+                    search = 1
+                    break
+
+        if search == 0:
+            for i in res['T']:
+                if i != 0:
+                    search = 1
+                    break
+
+        if search == 0:
             res = listn
 
         return res

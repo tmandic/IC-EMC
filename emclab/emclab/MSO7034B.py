@@ -32,6 +32,63 @@ class MSO7034B(GPIB):
         self._sel_chan(chan = chan)
 
     #===============================================================
+    def meas_freq(self):
+        """Measure signal frequency.
+
+        Returns signal frequency.
+        """
+        freq = float(self._dev.query(':MEAS:FREQ?'))
+        self._timestamp()
+        self._sent = self._sent1 + str(self.time) + self._sent2
+        sent = "The measured frequency is: {} Hz\n".format(freq)
+        sentence = self._sent + sent
+        print(sentence)
+        if self.fname != None:
+            self._write_sent(sentence)
+
+        return freq
+
+    #===============================================================
+    def meas_duty_cycle(self):
+        """Measure duty cycle.
+
+        Returns duty cyle.
+
+        """
+        dc = float(self._dev.query(':MEAS:DUTY?'))
+        self._timestamp()
+        self._sent = self._sent1 + str(self.time) + self._sent2
+        sent = "The measured duty cycle is: {} %\n".format(dc)
+        sentence = self._sent + sent
+        print(sentence)
+        if self.fname != None:
+            self._write_sent(sentence)
+
+        return dc
+
+    #===============================================================
+    def pwidth(self, freq = None):
+        """Calculates positive signal width using measurements of the frequency
+        and the duty cycle.
+.
+        Returns positive signal width.
+
+        """
+        dc = self.meas_duty_cycle()
+        if freq == None:
+            freq = self.meas_freq()
+        pwidth = dc / (100 * freq)
+        self._timestamp()
+        self._sent = self._sent1 + str(self.time) + self._sent2
+        sent = "The measured positive signal width is: {} s\n".format(pwidth)
+        sentence = self._sent + sent
+        print(sentence)
+        if self.fname != None:
+            self._write_sent(sentence)
+
+        return pwidth
+
+    #===============================================================
     def meas_width(self, pul = None):
         """Measure signal width.
 
@@ -64,24 +121,6 @@ class MSO7034B(GPIB):
             self._write_sent(sentence)
 
         return width
-
-    #===============================================================
-    def meas_freq(self):
-        """Measure signal frequency.
-
-        Returns signal frequency.
-        """
-
-        freq = float(self._dev.query(':MEAS:FREQ?'))
-        self._timestamp()
-        self._sent = self._sent1 + str(self.time) + self._sent2
-        sent = "The measured frequency is: {} Hz\n".format(freq)
-        sentence = self._sent + sent
-        print(sentence)
-        if self.fname != None:
-            self._write_sent(sentence)
-
-        return freq
 
     #===============================================================
     # PRIVATE METHODS
