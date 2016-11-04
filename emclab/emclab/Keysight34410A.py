@@ -67,7 +67,7 @@ class Keysight34410A(GPIB):
         acdc: What signal to measure:
         direct current (1 or 'dc') or alternating current (2 or 'ac')
 
-        rang: determine the RANGE option of the multimeter
+        rang: determine the RANGE option of the multimeter (if nothing or 'None' is entered, the function will only examine the parameter)
         0 or 'auto' for AUTO option;
         a number that will set the voltage range, choose between the following (in volts):
         0.1, 1, 10, 100, 1k (if another number is entered, the nearest one from
@@ -159,14 +159,15 @@ class Keysight34410A(GPIB):
 
         Input parameters
         ----------------
-        typ: determine the INTEGRATION option of the multimeter
+        typ: determine the INTEGRATION option of the multimeter (if nothing or 'None' is entered, the function will only examine the parameter)
         1 or 'NPLC' or 'nplc' for NPLC; 2 or 'APERTURE' or 'aperture' for APERTURE;
         in case of NPLC choose between the following(in seconds):
         0.006, 0.02, 0.06, 0.2, 1, 2, 10, 100 (if another number is entered, the nearest one from
         the previously listed will be taken as the voltage range).
 
         val = time parameter needed to set NPLC or APERTURE mode;
-        in case of NPLC choose between the following(in seconds):
+        in case of NPLC choose between the following(in seconds)
+        (if nothing or 'None' is entered, the function will only examine the parameter)
         0.006, 0.02, 0.06, 0.2, 1, 2, 10, 100 (if another number is entered, the nearest one from
         the previously listed will be taken as the time parameter).
 
@@ -249,7 +250,7 @@ class Keysight34410A(GPIB):
         acdc: What signal to measure:
         direct current (1 or 'dc') or alternating current (2 or 'ac')
 
-        rang: determine the RANGE option of the multimeter
+        rang: determine the RANGE option of the multimeter (if nothing or 'None' is entered, the function will only examine the parameter)
         0 or 'auto' for AUTO option;
         a number that will set the current range, choose between the following(in ampers):
         100u, 1m, 10m, 100m, 1, 3 (if another number is entered, the nearest one from
@@ -342,14 +343,15 @@ class Keysight34410A(GPIB):
 
         Input parameters
         ----------------
-        typ: determine the INTEGRATION option of the multimeter
+        typ: determine the INTEGRATION option of the multimeter (if nothing or 'None' is entered, the function will only examine the parameter)
         1 or 'NPLC' or 'nplc' for NPLC; 2 or 'APERTURE' or 'aperture' for APERTURE;
         in case of NPLC choose between the following(in seconds):
         0.006, 0.02, 0.06, 0.2, 1, 2, 10, 100 (if another number is entered, the nearest one from
         the previously listed will be taken as the voltage range).
 
         val = time parameter needed to set NPLC or APERTURE mode;
-        in case of NPLC choose between the following(in seconds):
+        in case of NPLC choose between the following(in seconds)
+        (if nothing or 'None' is entered, the function will only examine the parameter)
         0.006, 0.02, 0.06, 0.2, 1, 2, 10, 100 (if another number is entered, the nearest one from
         the previously listed will be taken as the time parameter).
 
@@ -417,7 +419,7 @@ class Keysight34410A(GPIB):
 
         Input parameters
         ----------------
-        rang: determine the RANGE option of the multimeter
+        rang: determine the RANGE option of the multimeter (if nothing or 'None' is entered, the function will only examine the parameter)
         0 or 'auto' for AUTO option;
         a number that will set the resistance range, choose between the following (in ohms):
         100, 1k, 10k, 100k, 1M, 10M, 100M, 1G (if another number is entered, the nearest one from
@@ -466,14 +468,15 @@ class Keysight34410A(GPIB):
 
         Input parameters
         ----------------
-        typ: determine the INTEGRATION option of the multimeter
+        typ: determine the INTEGRATION option of the multimeter (if nothing or 'None' is entered, the function will only examine the parameter)
         1 or 'NPLC' or 'nplc' for NPLC; 2 or 'APERTURE' or 'aperture' for APERTURE;
         in case of NPLC choose between the following(in seconds):
         0.006, 0.02, 0.06, 0.2, 1, 2, 10, 100 (if another number is entered, the nearest one from
         the previously listed will be taken as the voltage range).
 
         val = time parameter needed to set NPLC or APERTURE mode;
-        in case of NPLC choose between the following(in seconds):
+        in case of NPLC choose between the following(in seconds)
+        (if nothing or 'None' is entered, the function will only examine the parameter)
         0.006, 0.02, 0.06, 0.2, 1, 2, 10, 100 (if another number is entered, the nearest one from
         the previously listed will be taken as the time parameter).
 
@@ -541,7 +544,7 @@ class Keysight34410A(GPIB):
 
         Input parameters
         ----------------
-        rang: determine the RANGE option of the multimeter
+        rang: determine the RANGE option of the multimeter (if nothing or 'None' is entered, the function will only examine the parameter)
         0 or 'auto' for AUTO option;
         a number that will set the capacitance range, choose between the following (in farads):
         1n, 10n, 100n, 1u, 10u (if another number is entered, the nearest one from
@@ -603,10 +606,130 @@ class Keysight34410A(GPIB):
         return t
 
     #===============================================================
+    def temp_null(self, null = None, nullval = None):
+        """Set or examine temperature measurement null value.
+
+        Input parameters
+        ----------------
+        (if nothing or 'None' is entered, the function will only examine the parameter)
+        null - sets the null measurement feature to ON or OFF
+        ON - 1, '1', 'on', 'ON'
+        OFF - 2, '2', 'off', 'OFF'
+
+        nullval - edits the null value (if null is set to ON)
+
+        """
+
+    #===============================================================
+    def set_temp_meas(self, typ = None, wire = None):
+        """Set or examine temperature measurement probe type.
+
+        Input parameters
+        ----------------
+        (if nothing or 'None' is entered, the function will only examine the parameter)
+        typ - sets the probe type to RTD or THERMISTOR.
+        RTD - 1, '1', 'r', 'R', 'rtd', 'RTD'
+        THERMISTOR - 2, '2', 't', 'T', 'therm', 'THERM', 'thermistor', 'THERMISTOR'
+
+        wire - sets up a 2-wire or 4-wire measurement
+        2-wire - 2, '2', '2w', '2W'
+        4-wire - 4, '4', '4w', '4W'
+
+        """
+        if (typ == None) and (wire == None):
+            pass
+        elif typ in [1, '1', 'r', 'R', 'rtd', 'RTD'] and wire in [2, '2', '2w', '2W']:
+            self.probetype = 'RTD'
+            probetypea = 'RTD'
+        elif typ in [1, '1', 'r', 'R', 'rtd', 'RTD'] and wire in [4, '4', '4w', '4W']:
+            self.probetype = 'FRTD'
+            probetypea = 'FRTD'
+        elif typ in [2, '2', 't', 'T', 'therm', 'THERM', 'thermistor', 'THERMISTOR'] and wire in [2, '2', '2w', '2W']:
+            self.probetype = 'THERMISTOR'
+            probetypea = 'THERMISTOR'
+        elif typ in [2, '2', 't', 'T', 'therm', 'THERM', 'thermistor', 'THERMISTOR'] and wire in [4, '4', '4w', '4W']:
+            self.probetype = 'FTHERMISTOR'
+            probetypea = 'DEF'
+        else:
+            raise ValueError("Incorrect input.\n")
+
+        if (typ != None) and (wire != None):
+            self._dev.write("CONF:TEMP {}".format(probetypea))
+
+        probetest = self._dev.query("CONF?")
+        self._timestamp()
+        self._sent = self._sent1 + str(self.time) + self._sent2
+        sent = "The measurement is set up as {}".format(probetest)
+        sentence = self._sent + sent
+        print(sentence)
+        if self.fname != None:
+            self._write_sent(sentence)
+
+    #===============================================================
+    def temp_offset_comp(self, offset = None):
+        """Set or examine the offset compensation feature for RTD probes.
+
+        Input parameters
+        ----------------
+        offset - turn the offset compensation feature ON or OFF (if nothing or 'None' is entered, the function will only examine the parameter)
+        ON - 1, '1', 'on', 'ON'
+        OFF - 2, '2', 'off', 'OFF'
+
+        """
+        if self.probetype in ['RTD', 'FRTD']:
+            if offset == None:
+                pass
+            elif offset in [1, '1', 'on', 'ON']:
+                offset = 'ON'
+                self._dev.write("TEMP:TRAN:{}:OCOM {}".format(self.probetype, offset))
+            elif offset in [2, '2', 'off', 'OFF']:
+                offset = 'OFF'
+                self._dev.write("TEMP:TRAN:{}:OCOM {}".format(self.probetype, offset))
+
+            else:
+                raise ValueError("Incorrect input.\n")
+
+            offset = self._dev.query("TEMP:TRAN:{}:OCOM?".format(self.probetype))
+            self._timestamp()
+            self._sent = self._sent1 + str(self.time) + self._sent2
+            sent = "Offset is set up as {}.\n".format(offset)
+            sentence = self._sent + sent
+            print(sentence)
+            if self.fname != None:
+                self._write_sent(sentence)
+
+        elif self.probetype in ['THERMISTOR', 'FTHERMISTOR']:
+            sent = "Offset compensation feature can only be set up for RTD probes.\n"
+            self._timestamp()
+            self._sent = self._sent1 + str(self.time) + self._sent2
+            sentence = self._sent + sent
+            print(sentence)
+            if self.fname != None:
+                self._write_sent(sentence)
+
+        else:
+            sent = "To turn the offset compensation feature ON or OFF, you have to set up the measurement type to RTD.\n"
+            sent = "Offset compensation feature can only be set up for RTD probes.\n"
+            self._timestamp()
+            self._sent = self._sent1 + str(self.time) + self._sent2
+            sentence = self._sent + sent
+            print(sentence)
+            if self.fname != None:
+                self._write_sent(sentence)
+
+    #===============================================================
     def temp_unit(self, unit = None):
-        """Sets the temperature unit.
+        """Setor examine the temperature unit.
 
         Returns temperature unit.
+
+
+        Input parameters
+        ----------------
+        unit - temperature unit (if nothing or 'None' is entered, the function will only examine the parameter)
+        C - 1, '1', 'C', '°C'
+        F - 2, '2', 'F', '°F'
+        K - 3, '3', 'K'
 
         """
         if unit == None:
@@ -645,7 +768,7 @@ class Keysight34410A(GPIB):
 
     #===============================================================
     def temp_int(self, typ = None, val = None):
-        """Set or examine the resistance INTEGRATION option of the multimeter.
+        """Set or examine the temperature INTEGRATION option of the multimeter.
 
         Input parameters
         ----------------
