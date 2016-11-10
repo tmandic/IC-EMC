@@ -102,10 +102,6 @@ class DataCollector(object):
 ##        # check data consistency
 ##        if not all([val == numel[0] for val in numel]):
 ##            raise ValueError("Data inconsistent!")
-        # if all data does not have the same length, crop the first entries
-        N_crop = min(numel)
-        for key in meas.data.keys():
-            meas.data[key] = meas.data[key][-N_crop:]
 
         # get number of list entries (or 0 for scalar case)
         N = numel[0]
@@ -131,6 +127,11 @@ class DataCollector(object):
             # append data to the N last rows
 ##            if len(self.matrix) < N:
 ##                raise ValueError("Cannot append data to matrix!")
+            # if all data does not have the same length, crop the first entries
+            N_crop = min(numel)
+            for key in meas.data.keys():
+                meas.data[key] = meas.data[key][-N_crop:]
+
             N_add = min(len(self.matrix), N)
 
             # parse through the data
