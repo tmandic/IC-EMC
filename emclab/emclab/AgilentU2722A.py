@@ -6,7 +6,7 @@ from pprint import pprint
 from .GPIB import GPIB
 
 #===============================================================
-class AgilentU2723A(GPIB):
+class AgilentU2722A(GPIB):
     """USB Modular Source Measure Units Agilent U2732A.
 
     """
@@ -16,7 +16,7 @@ class AgilentU2723A(GPIB):
 
         """
         rm = visa.ResourceManager()
-        self._dev = rm.open_resource('GPIB0::' + str(addr) + '::INSTR')
+        self._dev = rm.open_resource('USB0::' + str(addr) + '::INSTR')
 
         # get instrument address
 
@@ -30,9 +30,9 @@ class AgilentU2723A(GPIB):
 
         self._sel_chan(chan = chan)
 
-        self.volt_rang()
+        self.volt_range()
         self.volt_limit()
-        self.curr_rang()
+        self.curr_range()
         self.curr_limit()
         self.volt_outval = None
         self.curr_outval = None
@@ -68,11 +68,11 @@ class AgilentU2723A(GPIB):
                 unit = 'A'
             else:
                 raise ValueError('Error.\n')
-        elif (int(typ) == 1) or (str(typ).lower() in ['1', 'v', 'volt', 'voltage']):
+        elif (typ == 1) or (str(typ).lower() in ['1', 'v', 'volt', 'voltage']):
             typ = 'VOLT'
             typ_sent = 'voltage'
             unit = 'V'
-        elif (int(typ) == 2) or (str(typ).lower() in ['2', 'i', 'curr', 'current']):
+        elif (typ == 2) or (str(typ).lower() in ['2', 'i', 'curr', 'current']):
             typ = 'CURR'
             typ_sent = 'current'
             unit = 'A'
@@ -127,12 +127,12 @@ class AgilentU2723A(GPIB):
         if outval == None:
             pass
         else:
-            if float(outval)>self.volt_rang_float:
-                print("The entered output value exceeds the set voltage range, which is: {}\n".format(self.volt_rang))
+            if float(outval)>self.volt_rangval_float:
+                print("The entered output value exceeds the set voltage range, which is: {}\n".format(self.volt_rangval))
             else:
                 self._dev.write('VOLT {}, (@{})'.format(float(outval), self.chan))
 
-        self.volt_outval = float(str(self._dev.query('VOLT? (@{n)'.format(self.chan))).rstrip('\n'))
+        self.volt_outval = float(str(self._dev.query('VOLT? (@{})'.format(self.chan))).rstrip('\n'))
         self.curr_outval = None
         sent = "The output voltage is set to: {} V.\n".format(self.volt_outval)
         self._sent = self._sent1 + str(self.time) + self._sent2
@@ -163,17 +163,17 @@ class AgilentU2723A(GPIB):
         elif (rang in [1, 20]) or (str(rang).lower() in ['1', '20', '20v', '20 v', 'r20v']):
             self._dev.write("VOLT:RANG R20V, (@{})".format(self.chan))
 
-        self.volt_rang = str(self._dev.query("VOLT:RANG? (@{})".format(self.chan))).rstrip('\n')
-        self.volt_rang_float = float(self.volt_rang.lstrip('R').rstrip('V'))
+        self.volt_rangval = str(self._dev.query("VOLT:RANG? (@{})".format(self.chan))).rstrip('\n')
+        self.volt_rangval_float = float(self.volt_rangval.lstrip('R').rstrip('V'))
 
-        sent = "The voltage range is set to: {}.\n".format(self.volt_rang)
+        sent = "The voltage range is set to: {}.\n".format(self.volt_rangval)
         self._sent = self._sent1 + str(self.time) + self._sent2
         sentence = self._sent + sent
         print(sentence)
         if self.fname != None:
             self._write_sent(sentence)
 
-        return self.volt_rang_float
+        return self.volt_rangval_float
 
     #===============================================================
     def volt_limit(self, limit = None):
@@ -189,21 +189,21 @@ class AgilentU2723A(GPIB):
         if limit == None:
             pass
         else:
-            if float(limit)>self.volt_rang_float:
-                print("The entered voltage limit exceeds the set voltage range, which is: {}\n".format(self.volt_rang))
+            if float(limit)>self.volt_rangval_float:
+                print("The entered voltage limit exceeds the set voltage range, which is: {}\n".format(self.volt_rangval))
             else:
                 self._dev.write("VOLT:LIM {}, (@{})".format(float(limit),self.chan))
 
-        self.volt_limit = float(str(self._dev.query("VOLT:LIM? (@{})".format(self.chan))).rstrip('\n'))
+        self.volt_limitval = float(str(self._dev.query("VOLT:LIM? (@{})".format(self.chan))).rstrip('\n'))
 
-        sent = "The voltage limit is set to: {} V.\n".format(self.volt_limit)
+        sent = "The voltage limit is set to: {} V.\n".format(self.volt_limitval)
         self._sent = self._sent1 + str(self.time) + self._sent2
         sentence = self._sent + sent
         print(sentence)
         if self.fname != None:
             self._write_sent(sentence)
 
-        return self.volt_limit
+        return self.volt_limitval
 
     #===============================================================
     def volt_trig(self, trig = None):
@@ -221,16 +221,16 @@ class AgilentU2723A(GPIB):
         else:
             self._dev.write("VOLT:TRIG {}, (@{})".format(float(trig), self.chan))
 
-        self.volt_trig = float(str("VOLT:TRIG? (@{})".format(self.chan)).rstrip("\n"))
+        self.volt_trigval = float(str("VOLT:TRIG? (@{})".format(self.chan)).rstrip("\n"))
 
-        sent = "The voltage trigger is set to: {} V.\n".format(self.volt_trig)
+        sent = "The voltage trigger is set to: {} V.\n".format(self.volt_trigval)
         self._sent = self._sent1 + str(self.time) + self._sent2
         sentence = self._sent + sent
         print(sentence)
         if self.fname != None:
             self._write_sent(sentence)
 
-        return self.volt_trig
+        return self.volt_trigval
 
     #===============================================================
     def curr_out(self, outval = None):
@@ -246,12 +246,12 @@ class AgilentU2723A(GPIB):
         if outval == None:
             pass
         else:
-            if float(outval)>self.curr_rang_float:
-                print("The entered output value exceeds the set current range, which is: {}\n".format(self.curr_rang))
+            if float(outval)>self.curr_rangval_float:
+                print("The entered output value exceeds the set current range, which is: {}\n".format(self.curr_rangval))
             else:
                 self._dev.write('CURR {}, (@{})'.format(float(outval), self.chan))
 
-        self.curr_outval = float(str(self._dev.query('CURR? (@{n)'.format(self.chan))).rstrip('\n'))
+        self.curr_outval = float(str(self._dev.query('CURR? (@{})'.format(self.chan))).rstrip('\n'))
         self.volt_outval = None
         sent = "The output current is set to: {} A.\n".format(self.curr_outval)
         self._sent = self._sent1 + str(self.time) + self._sent2
@@ -282,42 +282,42 @@ class AgilentU2723A(GPIB):
         """
         if rang == None:
             pass
-        elif (float(rang) == 1e-6) or (str(rang).lower() in ['1u', '1 u', '1ua', '1 ua', 'r1ua']):
+        elif (rang == 1e-6) or (str(rang).lower() in ['1e-6', '1u', '1 u', '1ua', '1 ua', 'r1ua']):
             self._dev.write("CURR:RANG R1uA, (@{})".format(self.chan))
-        elif (float(rang) == 1e-5) or (str(rang).lower() in ['10u', '10 u', '10ua', '10 ua', 'r10ua']):
+        elif (rang == 1e-5) or (str(rang).lower() in ['1e-5', '10u', '10 u', '10ua', '10 ua', 'r10ua']):
             self._dev.write("CURR:RANG R10uA, (@{})".format(self.chan))
-        elif (float(rang) == 1e-4) or (str(rang).lower() in ['100u', '100 u', '100ua', '100 ua', 'r100ua']):
+        elif (rang == 1e-4) or (str(rang).lower() in ['1e-4', '100u', '100 u', '100ua', '100 ua', 'r100ua']):
             self._dev.write("CURR:RANG R100uA, (@{})".format(self.chan))
-        elif (float(rang) == 1e-3) or (str(rang).lower() in ['1m', '1 m', '1ma', '1 ma', 'r1ma']):
+        elif (rang == 1e-3) or (str(rang).lower() in ['1e-3', '1m', '1 m', '1ma', '1 ma', 'r1ma']):
             self._dev.write("CURR:RANG R1mA, (@{})".format(self.chan))
-        elif (float(rang) == 1e-2) or (str(rang).lower() in ['10m', '10 m', '10ma', '10 ma', 'r10ma']):
+        elif (rang == 1e-2) or (str(rang).lower() in ['1e-2', '10m', '10 m', '10ma', '10 ma', 'r10ma']):
             self._dev.write("CURR:RANG R10mA, (@{})".format(self.chan))
-        elif (float(rang) == 12e-2) or (str(rang).lower() in ['120m', '120 m', '120ma', '120 ma', 'r120ma']):
+        elif (rang == 12e-2) or (str(rang).lower() in ['12e-2', '120m', '120 m', '120ma', '120 ma', 'r120ma']):
             self._dev.write("CURR:RANG R120mA, (@{})".format(self.chan))
 
-        self.curr_rang = str(self._dev.query("CURR:RANG? (@{})".format(self.chan))).rstrip('\n')
+        self.curr_rangval = str(self._dev.query("CURR:RANG? (@{})".format(self.chan))).rstrip('\n')
 
-        if self.curr_rang == 'R1uA':
-            self.curr_rang_float = 1e-6
-        elif self.curr_rang == 'R10uA':
-            self.curr_rang_float = 1e-5
-        elif self.curr_rang == 'R100uA':
-            self.curr_rang_float = 1e-4
-        elif self.curr_rang == 'R1mA':
-            self.curr_rang_float = 1e-3
-        elif self.curr_rang == 'R10mA':
-            self.curr_rang_float = 1e-2
-        elif self.curr_rang == 'R120mA':
-            self.curr_rang_float = 12e-2
+        if self.curr_rangval == 'R1uA':
+            self.curr_rangval_float = 1e-6
+        elif self.curr_rangval == 'R10uA':
+            self.curr_rangval_float = 1e-5
+        elif self.curr_rangval == 'R100uA':
+            self.curr_rangval_float = 1e-4
+        elif self.curr_rangval == 'R1mA':
+            self.curr_rangval_float = 1e-3
+        elif self.curr_rangval == 'R10mA':
+            self.curr_rangval_float = 1e-2
+        elif self.curr_rangval == 'R120mA':
+            self.curr_rangval_float = 12e-2
 
-        sent = "The current range is set to: {}.\n".format(self.curr_rang)
+        sent = "The current range is set to: {}.\n".format(self.curr_rangval)
         self._sent = self._sent1 + str(self.time) + self._sent2
         sentence = self._sent + sent
         print(sentence)
         if self.fname != None:
             self._write_sent(sentence)
 
-        return self.curr_rang_float
+        return self.curr_rangval_float
 
     #===============================================================
     def curr_limit(self, limit = None):
@@ -333,21 +333,21 @@ class AgilentU2723A(GPIB):
         if limit == None:
             pass
         else:
-            if float(limit)>self.curr_rang_float:
-                print("The entered current limit exceeds the set current range, which is: {}\n".format(self.curr_rang))
+            if (float(limit)>self.curr_rangval_float):
+                print("The entered current limit exceeds the set current range, which is: {}\n".format(self.curr_rangval))
             else:
                 self._dev.write("CURR:LIM {}, (@{})".format(float(limit),self.chan))
 
-        self.curr_limit = float(str(self._dev.query("CURR:LIM? (@{})".format(self.chan))).rstrip('\n'))
+        self.curr_limitval = float(str(self._dev.query("CURR:LIM? (@{})".format(self.chan))).rstrip('\n'))
 
-        sent = "The current limit is set to: {} A.\n".format(self.curr_limit)
+        sent = "The current limit is set to: {} A.\n".format(self.curr_limitval)
         self._sent = self._sent1 + str(self.time) + self._sent2
         sentence = self._sent + sent
         print(sentence)
         if self.fname != None:
             self._write_sent(sentence)
 
-        return self.curr_limit
+        return self.curr_limitval
 
     #===============================================================
     def curr_trig(self, trig = None):
@@ -365,16 +365,16 @@ class AgilentU2723A(GPIB):
         else:
             self._dev.write("CURR:TRIG {}, (@{})".format(float(trig), self.chan))
 
-        self.curr_trig = float(str("CURR:TRIG? (@{})".format(self.chan)).rstrip("\n"))
+        self.curr_trigval = float(str("CURR:TRIG? (@{})".format(self.chan)).rstrip("\n"))
 
-        sent = "The current trigger is set to: {} A.\n".format(self.curr_trig)
+        sent = "The current trigger is set to: {} A.\n".format(self.curr_trigval)
         self._sent = self._sent1 + str(self.time) + self._sent2
         sentence = self._sent + sent
         print(sentence)
         if self.fname != None:
             self._write_sent(sentence)
 
-        return self.curr_trig
+        return self.curr_trigval
 
     #===============================================================
     def output(self, output = None):
@@ -398,10 +398,10 @@ class AgilentU2723A(GPIB):
         else:
             raise ValueError("Wrong input.\n")
 
-        self.output = int(str(self._dev.query("OUTP? (@{})".format(self.chan))).rstrip('\n'))
-        if self.output == 1:
+        self.outputval = int(str(self._dev.query("OUTP? (@{})".format(self.chan))).rstrip('\n'))
+        if self.outputval == 1:
             out = 'ON'
-        elif self.output == 0:
+        elif self.outputval == 0:
             out = 'OFF'
         else:
             raise ValueError("Error.\n")
@@ -413,7 +413,7 @@ class AgilentU2723A(GPIB):
         if self.fname != None:
             self._write_sent(sentence)
 
-        return self.output
+        return self.outputval
 
     #===============================================================
     def sweep_points(self, sp = None):
@@ -477,7 +477,7 @@ class AgilentU2723A(GPIB):
     def aper(self, typ):
         """Examine the voltage or current aperture.
 
-        Returns aperture value i seconds.
+        Returns aperture value in seconds.
 
         Input parameters
         ----------------

@@ -13,5 +13,9 @@ from .MSO7034B_functions import *
 from .Agilent53132A import Agilent53132A
 from .emclab_axes import emclab_axes
 from .clk_meas_functions import *
-from .AgilentU2723A import AgilentU2723A
+from .AgilentU2722A import AgilentU2722A
 from .Keysight34410A_therm_functions import *
+from .Agilent53132A_freq_fun import *
+from .AgilentU2722A_fun import *
+from .Keysight53220A import *
+from .Keysight53220A_fun import *

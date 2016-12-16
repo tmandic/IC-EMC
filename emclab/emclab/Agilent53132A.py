@@ -36,11 +36,6 @@ class Agilent53132A(GPIB):
         """Measure frequency.
 
         Returns frequency.
-
-        Input parameters
-        ----------------
-        chan - select channel:
-        1, '1', 'A' or 2, '2', 'B'
         """
         self._dev.write("'FREQ {}'".format(self.chan))
 
