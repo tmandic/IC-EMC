@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import time
 import visa
+import numpy as np
 from pprint import pprint
 
 from .GPIB import GPIB
@@ -34,11 +35,13 @@ class AgilentU2722A(GPIB):
         self.volt_limit()
         self.curr_range()
         self.curr_limit()
+        self.sweep_points(100)
+        self.tinterval(1)
         self.volt_outval = None
         self.curr_outval = None
 
     #===============================================================
-    def meas(self, typ = None, dataoutput = 'scalar'):
+    def meas(self, typ = None, dataoutput = 'array'):
         """Measure the output voltage or current on the set.
 
         Returns measurement value in V/A.
@@ -83,9 +86,10 @@ class AgilentU2722A(GPIB):
             measval = float(str(self._dev.query("MEAS:{}? (@{})".format(typ, self.chan))).rstrip('\n'))
             sent = "The measured {} is {} {}.\n".format(typ_sent, measval, unit)
         elif (dataoutput == 2) or (dataoutput in [2, '2', 'a', 'arr', 'array']):
-            ### upitan output, testirati nakon sto stigne uredjaj
-            measval = self._dev.query("MEAS:AR:{}? (@{})".format(typ, self.chan))
-            sent = "The measured {} values (in {}) are {}.\n".format(typ_sent, unit, measval)
+            measval1 = self._dev.query("MEAS:ARR:{}? (@{})".format(typ, self.chan))
+            measval2 = [float(s) for s in measval1.split(" ,")]
+            measval = sum(np.asarray(measval2))/len(measval2)
+            sent = "Number of points measured: {}.\nThe average measured {} is {} {}.\n".format(len(measval2),typ_sent, measval, unit)
         else:
             raise ValueError("Wrong input.\n")
 

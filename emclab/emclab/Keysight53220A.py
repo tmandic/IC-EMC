@@ -11,7 +11,7 @@ class Keysight53220A(GPIB):
 
     """
     #===============================================================
-    def __init__(self, addr, chan = None, ratio = None, fname = None):
+    def __init__(self, addr, chan = None, level = None, fname = None):
         """Initialization.
 
         """
@@ -29,7 +29,7 @@ class Keysight53220A(GPIB):
 
         self.fname = fname
 
-        self.ratio = ratio
+        self.level = level
 
         self._sel_chan(chan = chan)
 
@@ -152,7 +152,7 @@ class Keysight53220A(GPIB):
         return time
 
     #===============================================================
-    def meas_duty_cycle_r(self, pol = None, lev = None):
+    def meas_duty_cycle_r(self, pol = None, lev = None, coupling = None, mode = None):
         """Measures duty cycle.
 
         Returns duty cycle.
@@ -170,26 +170,57 @@ class Keysight53220A(GPIB):
         numeric value with the V or MV (millivolt) suffix: 100 MV or .1V.
         When the lev(<reference>) is omitted or specified in percent, auto-leveling is enabled. When specified in
         absolute voltage, auto-leveling is disabled.
-        (if nothing is entered, default values will be used (50 PCT))
+        (if nothing is entered, default values will be used (0 [v] or 50 PCT))
+
+        coupling: select ac or dc coupling (used when mode is set to 1)
+        ac - 1, '1', 'ac', 'AC'
+        dc - 2, '2', 'dc', 'DC'
+        (if nothing is entered, default values will be used('ac'))
+
+        mode: selects whether the 'lev' variable(reference level) will be entered in % or in [V]
+        % - 0, '0'
+        [V] - 1, '1'
+        (if nothing is entered, default values will be used(1))
 
         """
-        if lev != None:
-            level = lev
-        elif self.ratio != None:
-            level = self.ratio
-        elif lev == None:
-            level = 50
-        else:
-            raise ValueError("Error.\n")
-
         if (pol == None) or (pol in [1, '1', 'p', 'pos', 'positive', 'P', 'POS', 'POSITIVE']):
             word = 'positive'
-            dc = float(self._dev.query(('CONF:PDUT {},(@{})\nREAD?').format(level, self.chan)))
+            dc_q = 'P'
         elif pol in [2, '2', 'n', 'neg', 'negative', 'N', 'NEG', 'NEGATIVE']:
             word = 'negative'
-            dc = float(self._dev.query(('CONF:NDUT {},(@{})\nREAD?').format(level, self.chan)))
+            dc_q = 'N'
         else:
             raise ValueError("Wrong input for the 'pol' parameter.\n")
+
+        if (coupling == None) or (coupling in [1, '1', 'ac', 'AC']):
+            coupling = 'AC'
+        elif coupling in [2, '2', 'dc', 'DC']:
+            coupling = 'DC'
+        else:
+            raise ValueError("Wrong input for the 'coupling' parameter.\n")
+
+        if mode in [0, '0']:
+            if lev != None:
+                level = lev
+            elif self.level != None:
+                level = self.level
+            elif lev == None:
+                level = 50
+            else:
+                raise ValueError("Error.\n")
+            if (level<10) or (level>90):
+                raise ValueError("Wrong input for level.\n")
+            dc = float(self._dev.query(('CONF:{}DUT {},(@{})\nREAD?').format(dc_q, level, self.chan)))
+        elif (mode == None) or (mode in [1, '1']):
+            if lev != None:
+                level = lev
+            elif lev == None:
+                level = 0
+            else:
+                raise ValueError("Error.\n")
+            width = float(self._dev.query(('CONF:{}DUT {}V,(@{})\nINP{}:COUP {}\nREAD?').format(dc_q, level, self.chan, self.chan, coupling)))
+        else:
+            raise ValueError("Wrong input for the 'mode' parameter.\n")
 
         self._timestamp()
         self._sent = self._sent1 + str(self.time) + self._sent2
@@ -202,14 +233,14 @@ class Keysight53220A(GPIB):
         return dc
 
     #===============================================================
-    def meas_width_r(self, pol = None, lev = None):
+    def meas_width_r(self, pol = None, lev = None, coupling = None, mode = None):
         """Measures positive signal width.
 
         Returns positive signal width.
 
         Input parameters
         ----------------
-        pos: selecets positive or negative signal width
+        pol: selects positive or negative signal width
         positive - 1, '1', 'p', 'pos', 'positive', 'P', 'POS', 'POSITIVE'
         negative - 2, '2', 'n', 'neg', 'negative', 'N', 'NEG', 'NEGATIVE'
         (if nothing is entered, default values will be used ('p'))
@@ -219,26 +250,57 @@ class Keysight53220A(GPIB):
         peak voltage, or in absolute voltage. To specify the level in percent, use a numeric value with no suffix
         or with the PCT suffix; for example, 30 or 30 PCT. To specify the level in absolute voltage, use a
         numeric value with the V or MV (millivolt) suffix: 100 MV or .1V.
-        (if nothing is entered, default values will be used (50 PCT))
+        (if nothing is entered, default values will be used (0 [V] or 50 PCT))
+
+        coupling: select ac or dc coupling (used when mode is set to 1)
+        ac - 1, '1', 'ac', 'AC'
+        dc - 2, '2', 'dc', 'DC'
+        (if nothing is entered, default values will be used('ac'))
+
+        mode: selects whether the 'lev' variable(reference level) will be entered in % or in [V]
+        % - 0, '0'
+        [V] - 1, '1'
+        (if nothing is entered, default values will be used(1))
 
         """
-        if lev != None:
-            level = lev
-        elif self.ratio != None:
-            level = self.ratio
-        elif lev == None:
-            level = 50
-        else:
-            raise ValueError("Error.\n")
-
         if (pol == None) or (pol in [1, '1', 'p', 'pos', 'positive', 'P', 'POS', 'POSITIVE']):
             word = 'positive'
-            width = float(self._dev.query(('CONF:PWID {},(@{})\nREAD?').format(level, self.chan)))
+            width_q = 'P'
         elif pol in [2, '2', 'n', 'neg', 'negative', 'N', 'NEG', 'NEGATIVE']:
             word = 'negative'
-            width = float(self._dev.query(('CONF:NWID {},(@{})\nREAD?').format(level, self.chan)))
+            width_q = 'N'
         else:
             raise ValueError("Wrong input for the 'pol' parameter.\n")
+
+        if (coupling == None) or (coupling in [1, '1', 'ac', 'AC']):
+            coupling = 'AC'
+        elif coupling in [2, '2', 'dc', 'DC']:
+            coupling = 'DC'
+        else:
+            raise ValueError("Wrong input for the 'coupling' parameter.\n")
+
+        if mode in [0, '0']:
+            if lev != None:
+                level = lev
+            elif self.level != None:
+                level = self.level
+            elif lev == None:
+                level = 50
+            else:
+                raise ValueError("Error.\n")
+            if (level<10) or (level>90):
+                raise ValueError("Wrong input for level.\n")
+            width = float(self._dev.query(('CONF:{}WID {},(@{})\nREAD?').format(width_q, level, self.chan)))
+        elif (mode == None) or (mode in [1, '1']):
+            if lev != None:
+                level = lev
+            elif lev == None:
+                level = 0
+            else:
+                raise ValueError("Error.\n")
+            width = float(self._dev.query(('CONF:{}WID {}V,(@{})\nINP{}:COUP {}\nREAD?').format(width_q, level, self.chan, self.chan, coupling)))
+        else:
+            raise ValueError("Wrong input for the 'mode' parameter.\n")
 
         self._timestamp()
         self._sent = self._sent1 + str(self.time) + self._sent2
@@ -251,7 +313,7 @@ class Keysight53220A(GPIB):
         return width
 
     #===============================================================
-    def meas_freq_r(self, lev = None, ef = None, coupling = None):
+    def meas_freq_r(self, lev = None, ef = None, coupling = None, inpfilt = None, mode = None):
         """Measures frequency.
 
         Returns frequency.
@@ -259,8 +321,9 @@ class Keysight53220A(GPIB):
         Input parameters
         ----------------
         lev: reference level
-        number between 10 and 90 (in %)
-        (if nothing is entered, default values will be used(50))
+        number between 10 and 90 (in %) if mode in 0
+        number in [V] if mode in 1
+        (if nothing is entered, default values will be used(0 [V] / 50 PCT))
 
         ef: expected frequency
         number in [Hz]
@@ -271,23 +334,117 @@ class Keysight53220A(GPIB):
         dc - 2, '2', 'dc', 'DC'
         (if nothing is entered, default values will be used('ac'))
 
+        inpfilt: enables or disables the input channel's low-pass filter. When enabled, the input channel is bandwidth-limited to 100 kHz.
+        on - 1, '1', 'on', 'ON'
+        off - 0, '0', 'off', 'OFF'
+        (when nothing is entered, the input filter is set to 1)
+
+        mode: selects whether the 'lev' variable(reference level) will be entered in % or in [V]
+        % - 0, '0'
+        [V] - 1, '1'
+        (if nothing is entered, default values will be used(1))
+
+        """
+        if ef == None:
+            ef = 1e6
+
+        if (inpfilt == None) or (inpfilt in [1, '1', 'on', 'ON']):
+            inpfilt = 'ON'
+        elif inpfilt in [0, '0', 'off', 'OFF']:
+            inpfilt = 'OFF'
+        else:
+            raise ValueError("Wrong input for the variable 'inpfilt'.\n")
+
+        if (coupling == None) or (coupling in [1, '1', 'ac', 'AC']):
+            coupling = 'AC'
+        elif coupling in [2, '2', 'dc', 'DC']:
+            coupling = 'DC'
+        else:
+            raise ValueError("Wrong input for the 'coupling' parameter.\n")
+
+        if mode in [0, '0']:
+            if lev != None:
+                level = lev
+            elif self.level != None:
+                level = self.level
+            elif lev == None:
+                level = 50
+            else:
+                raise ValueError("Error.\n")
+            if (level<10) or (level>90):
+                raise ValueError("Wrong input for level.\n")
+            s = 'INP{}:COUP {}\nCONF:FREQ {},(@{})\nINP{}:LEV:AUTO ON\nINP{}:FILT {}\nINP{}:LEV:REL {}\nREAD?'.format(self.chan,coupling,ef,self.chan,self.chan,self.chan,inpfilt,self.chan,level)
+        elif (mode == None) or mode in [1, '1']:
+            if lev != None:
+                level = lev
+            elif lev == None:
+                level = 0
+            else:
+                raise ValueError("Error.\n")
+            s = 'INP{}:COUP {}\nCONF:FREQ {},(@{})\nINP{}:FILT {}\nINP{}:LEV {}\nREAD?'.format(self.chan,coupling,ef,self.chan,self.chan,inpfilt,self.chan,level)
+        else:
+            raise ValueError("Wrong input for the 'mode' parameter.\n")
+
+        freq = float(self._dev.query(str(s)))
+
+        self._timestamp()
+        self._sent = self._sent1 + str(self.time) + self._sent2
+        sent = "The measured frequency is: {} Hz.\n".format(freq)
+        sentence = self._sent + sent
+        print(sentence)
+        if self.fname != None:
+            self._write_sent(sentence)
+
+        return freq
+
+    #===============================================================
+    def meas_freq_ar(self, lev = None, ef = None, coupling = None, inpfilt = None):
+        """Measures frequency.
+
+        Returns frequency.
+
+        Input parameters
+        ----------------
+        lev: reference level
+        number in [V]
+        (if nothing is entered, default values will be used(0))
+
+        ef: expected frequency
+        number in [Hz]
+        (if nothing is entered, default values will be used(1e6))
+
+        coupling: select ac or dc coupling
+        ac - 1, '1', 'ac', 'AC'
+        dc - 2, '2', 'dc', 'DC'
+        (if nothing is entered, default values will be used('ac'))
+
+        inpfilt: enables or disables the input channel's low-pass filter. When enabled, the input channel is bandwidth-limited to 100 kHz.
+        on - 1, '1', 'on', 'ON'
+        off - 0, '0', 'off', 'OFF'
+        (when nothing is entered, the input filter is set to 1)
+
         """
         if ef == None:
             ef = 1e6
 
         if lev != None:
             level = lev
-        elif self.ratio != None:
-            level = self.ratio
         elif lev == None:
-            level = 50
+            level = 0
         else:
             raise ValueError("Error.\n")
 
+        if (inpfilt == None) or (inpfilt in [1, '1', 'on', 'ON']):
+            inpfilt = 'ON'
+        elif inpfilt in [0, '0', 'off', 'OFF']:
+            inpfilt = 'OFF'
+        else:
+            raise ValueError("Wrong input for the variable 'inpfilt'.\n")
+
         if (coupling == None) or (coupling in [1, '1', 'ac', 'AC']):
-            s = 'INP{}:COUP AC\nCONF:FREQ {},(@{})\nINP{}:LEV:AUTO ON\nINP{}:LEV:REL {}\nREAD?'.format(self.chan,ef,self.chan,self.chan,self.chan,level)
+            s = 'INP{}:COUP AC\nCONF:FREQ {},(@{})\nINP{}:FILT {}\nINP{}:LEV {}\nREAD?'.format(self.chan,ef,self.chan,self.chan,inpfilt,self.chan,level)
         elif coupling in [2, '2', 'dc', 'DC']:
-            s = 'INP{}:COUP DC\nCONF:FREQ {},(@{})\nINP{}:LEV:AUTO ON\nINP{}:LEV:REL {}\nREAD?'.format(self.chan,ef,self.chan,self.chan,self.chan,level)
+            s = 'INP{}:COUP DC\nCONF:FREQ {},(@{})\nINP{}:FILT {}\nINP{}:LEV {}\nREAD?'.format(self.chan,ef,self.chan,self.chan,inpfilt,self.chan,level)
         else:
             raise ValueError("Wrong input for the 'coupling' parameter.\n")
 

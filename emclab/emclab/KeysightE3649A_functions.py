@@ -2,7 +2,7 @@ import numpy as np
 import time
 from emclab import KeysightE3649A
 
-#Keysight E3469A, adress 3, channel 1
+#Keysight E3469A, adress 3, channel 1, VDD
 params_kleft1 = {
     'addr'              : 3,
     'channel'           : 1,
@@ -14,7 +14,7 @@ params_out_kleft1= {
     'max_curr'      : 0.4
 }
 
-#Keysight E3469A, adress 3, channel 2
+#Keysight E3469A, adress 3, channel 2, VCC
 params_kleft2 = {
     'addr'              : 3,
     'channel'           : 2,

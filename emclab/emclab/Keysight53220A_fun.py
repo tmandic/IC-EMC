@@ -3,10 +3,10 @@ import time
 from emclab import Keysight53220A
 
 def set_freqm(ratio = None):
-    clk1 = Keysight53220A(1, 1, ratio = ratio)
-    clk2 = Keysight53220A(1, 2, ratio = ratio)
-    bd1 = Keysight53220A(2, 1, ratio = ratio)
-    bd2 = Keysight53220A(2, 2, ratio = ratio)
+    clk1 = Keysight53220A(1, 1)
+    clk2 = Keysight53220A(1, 2)
+    bd1 = Keysight53220A(2, 1)
+    bd2 = Keysight53220A(2, 2)
     list_of_fm = [clk1, clk2, bd1, bd2]
 
     return list_of_fm
