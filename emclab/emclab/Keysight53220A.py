@@ -11,7 +11,7 @@ class Keysight53220A(GPIB):
 
     """
     #===============================================================
-    def __init__(self, addr, chan = None, level = None, fname = None):
+    def __init__(self, addr, chan = None, level = None, gatetime = None, trigcoun = None, fname = None):
         """Initialization.
 
         """
@@ -30,6 +30,10 @@ class Keysight53220A(GPIB):
         self.fname = fname
 
         self.level = level
+
+        self.gatetime = gatetime
+
+        self.trigcoun = trigcoun
 
         self._sel_chan(chan = chan)
 
@@ -362,6 +366,24 @@ class Keysight53220A(GPIB):
         else:
             raise ValueError("Wrong input for the 'coupling' parameter.\n")
 
+        if self.gatetime == None:
+            self.gatetime = 0.1
+        elif ((float(self.gatetime)<1e-4) or (float(self.gatetime)>1000)):
+            raise ValueError("Wrong input for the variable gatetime")
+        else:
+            pass
+
+        if self.trigcoun == None:
+            self.trigcoun = 1
+        elif ((int(self.trigcoun)<1) or (int(self.trigcoun)>1e6)):
+            raise ValueError("Wrong input for the variable trigcoun")
+        else:
+            pass
+
+        if ((self.gatetime>1)or (self.trigcoun>1)):
+            timeout = self._dev.timeout
+            self._dev.timeout = None
+
         if mode in [0, '0']:
             if lev != None:
                 level = lev
@@ -373,23 +395,42 @@ class Keysight53220A(GPIB):
                 raise ValueError("Error.\n")
             if (level<10) or (level>90):
                 raise ValueError("Wrong input for level.\n")
-            s = 'INP{}:COUP {}\nCONF:FREQ {},(@{})\nINP{}:LEV:AUTO ON\nINP{}:FILT {}\nINP{}:LEV:REL {}\nREAD?'.format(self.chan,coupling,ef,self.chan,self.chan,self.chan,inpfilt,self.chan,level)
+            self.level = level
+            s = 'INP{}:COUP {}\nCONF:FREQ {},(@{})\nINP{}:LEV:AUTO ON\nINP{}:FILT {}\nINP{}:LEV:REL {}\nFREQ:GATE:SOUR TIME\nFREQ:GATE:TIME {}\nTRIG:COUN {}\nREAD?'.format(self.chan,coupling,ef,self.chan,self.chan,self.chan,inpfilt,self.chan,self.level,self.gatetime, self.trigcoun)
         elif (mode == None) or mode in [1, '1']:
             if lev != None:
                 level = lev
+            elif self.level != None:
+                level = self.level
             elif lev == None:
                 level = 0
             else:
                 raise ValueError("Error.\n")
-            s = 'INP{}:COUP {}\nCONF:FREQ {},(@{})\nINP{}:FILT {}\nINP{}:LEV {}\nREAD?'.format(self.chan,coupling,ef,self.chan,self.chan,inpfilt,self.chan,level)
+            self.level = level
+            s = 'INP{}:COUP {}\nCONF:FREQ {},(@{})\nINP{}:FILT {}\nINP{}:LEV {}\nFREQ:GATE:SOUR TIME\nFREQ:GATE:TIME {}\nTRIG:COUN {}\nREAD?'.format(self.chan,coupling,ef,self.chan,self.chan,inpfilt,self.chan,self.level,self.gatetime, self.trigcoun)
         else:
             raise ValueError("Wrong input for the 'mode' parameter.\n")
 
-        freq = float(self._dev.query(str(s)))
+        t1 = time.time()
+
+        freq0 = self._dev.query(str(s))
+
+        t2 = time.time()
+        dt = t2-t1
+
+        if (self.trigcoun == 1):
+            freq = [float(freq0)]
+            sent = "The measured frequency is: {} Hz.\n".format(freq)
+        else:
+            freq = [float(s) for s in freq0.split(",")]
+            print("The measurement for\nN = {}\nand\nGatetime = {} s\ntook: {} s.\n".format(self.trigcoun,self.gatetime,dt))
+            sent = "The measured frequencies are: {} Hz.\n".format(freq)
+
+        if ((self.gatetime>1) or (self.trigcoun>1)):
+            self._dev.timeout = timeout
 
         self._timestamp()
         self._sent = self._sent1 + str(self.time) + self._sent2
-        sent = "The measured frequency is: {} Hz.\n".format(freq)
         sentence = self._sent + sent
         print(sentence)
         if self.fname != None:
@@ -441,14 +482,28 @@ class Keysight53220A(GPIB):
         else:
             raise ValueError("Wrong input for the variable 'inpfilt'.\n")
 
+        if self.gatetime == None:
+            self.gatetime = 0.1
+        elif ((float(self.gatetime)<1e-4) or (float(self.gatetime)>1000)):
+            raise ValueError("Wrong input for the variable gatetime")
+        else:
+            pass
+
+        if (self.gatetime>1):
+            timeout = self._dev.timeout
+            self._dev.timeout = self.gatetime + 3000
+
         if (coupling == None) or (coupling in [1, '1', 'ac', 'AC']):
-            s = 'INP{}:COUP AC\nCONF:FREQ {},(@{})\nINP{}:FILT {}\nINP{}:LEV {}\nREAD?'.format(self.chan,ef,self.chan,self.chan,inpfilt,self.chan,level)
+            s = 'INP{}:COUP AC\nCONF:FREQ {},(@{})\nINP{}:FILT {}\nINP{}:LEV {}\nFREQ:GATE:SOUR TIME\nFREQ:GATE:TIME {}\nREAD?'.format(self.chan,ef,self.chan,self.chan,inpfilt,self.chan,level,self.gatetime)
         elif coupling in [2, '2', 'dc', 'DC']:
-            s = 'INP{}:COUP DC\nCONF:FREQ {},(@{})\nINP{}:FILT {}\nINP{}:LEV {}\nREAD?'.format(self.chan,ef,self.chan,self.chan,inpfilt,self.chan,level)
+            s = 'INP{}:COUP DC\nCONF:FREQ {},(@{})\nINP{}:FILT {}\nINP{}:LEV {}\nFREQ:GATE:SOUR TIME\nFREQ:GATE:TIME {}\nREAD?'.format(self.chan,ef,self.chan,self.chan,inpfilt,self.chan,level,self.gatetime)
         else:
             raise ValueError("Wrong input for the 'coupling' parameter.\n")
 
         freq = float(self._dev.query(str(s)))
+
+        if (self.gatetime>1):
+            self._dev.timeout = timeout
 
         self._timestamp()
         self._sent = self._sent1 + str(self.time) + self._sent2

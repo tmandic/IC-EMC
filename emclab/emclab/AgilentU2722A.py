@@ -35,7 +35,7 @@ class AgilentU2722A(GPIB):
         self.volt_limit()
         self.curr_range()
         self.curr_limit()
-        self.sweep_points(100)
+        self.sweep_points(10)
         self.tinterval(1)
         self.volt_outval = None
         self.curr_outval = None
