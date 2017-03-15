@@ -30,10 +30,9 @@ def test_DataCollector_add():
     #===============================================================
     # define new DataCollector object
     meas_vars = [['VDD', 'V'],
+                 ['AVDD', 'V'],
                  ['TEMP', 'degC'],
-                 ['FREQ', 'Hz'],
-                 ['TIMESTAMP', 's'],
-                 ['ADDING_TIME', 's']]
+                 ['FREQ', 'Hz']]
     dc = DataCollector(meas_vars)
 
     # make several measurements
@@ -54,6 +53,7 @@ def test_DataCollector_add():
     assert data['VDD_V'].tolist() == [3.3] * 10
     assert data['TEMP_degC'].tolist() == [27] * 10
     assert data['FREQ_Hz'].tolist() == [1e6] * 10
+    assert all([np.isnan(val) for val in data['AVDD_V']])
 
     #===============================================================
     # TC2

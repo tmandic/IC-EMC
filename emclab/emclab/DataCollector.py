@@ -23,9 +23,12 @@ class DataCollector(object):
                  ['TEMP', 'C'],
                  ['FREQ', 'Hz'],
                  ['SENSITIVITY', 'Hz/V'],
-                 ['PHASE_NOISE', 'dBc/Hz'],
-                 ['TIMESTAMP', ''],
-                 ['ADDING_TIME', 's']]
+                 ['PHASE_NOISE', 'dBc/Hz']]
+
+    _special_vars = ['T_STAMP', 'T_ADD']
+    _special_vars_legacy = ['TIMESTAMP', 'ADDING_TIME']
+    _special_units = ['s', 's']
+    _just = 9
 
     #===============================================================
     def __init__(self, meas_vars = None):
@@ -38,8 +41,29 @@ class DataCollector(object):
         If None, the matrix is initialized using DataCollector._meas_vars.
         """
 
+        # use copy
+        meas_vars = deepcopy(meas_vars)
+
+        # user-defined measured variables
         if meas_vars is None:
             meas_vars = self._meas_vars
+
+        # add special vars if not already present
+        names = [mm[0] for mm in meas_vars]
+        for legacy, special_var, special_unit in zip(self._special_vars_legacy,
+                                                     self._special_vars,
+                                                     self._special_units):
+            if legacy not in names and \
+               special_var not in names:
+                meas_vars.append([special_var, special_unit])
+
+        # rename legacy names if present
+        for legacy, special_var, special_unit in zip(self._special_vars_legacy,
+                                                     self._special_vars,
+                                                     self._special_units):
+            if legacy in names:
+                index = names.index(legacy)
+                meas_vars[index][0] = special_var
 
         # build index of variables and units
         self._vars = dict()
@@ -51,6 +75,10 @@ class DataCollector(object):
         # define header
         self.header = ','.join([var + " [" + unit + "]"
                                 for var, unit in meas_vars])
+
+        # define header for human-readable output
+        self.header_h = '\t'.join([(var + " [" + unit + "]").rjust(self._just)
+                                   for var, unit in meas_vars])
 
         ncol = len(self._vars)
         self.matrix = np.array([]).reshape(0, ncol)
@@ -84,12 +112,8 @@ class DataCollector(object):
         if error:
             raise ValueError("Some measured data not defined in DataCollector!")
 
-        # parse through the data
-            # case 1: meas contains only scalars
-            # case 2: meas contains lists of equal length
-
         # list containing the number of entries in the meas lists
-        # 0 represents a scalar
+            # 1 represents a scalar
         numel = list()
         for key in meas.data.keys():
             try:
@@ -111,15 +135,20 @@ class DataCollector(object):
         for param, col in self._vars.items():
             if param in meas.data.keys():
                 new_data[:, col] *= meas.data[param]
-            else:
+            elif param not in self._special_vars:
                 new_data[:, col] *= np.nan
 
         # calculate the timestamp and adding time
-        new_data[:, self._vars['TIMESTAMP']] *= meas.time_out
-        new_data[:, self._vars['ADDING_TIME']] *= meas.time_out - meas.time_in
+        new_data[:, self._vars['T_STAMP']] *= meas.time_out
+        new_data[:, self._vars['T_ADD']] *= meas.time_out - meas.time_in
 
         # append new row to matrix
         self.matrix = np.vstack((self.matrix, new_data))
+
+        # output human readable progress log
+        np.savetxt("PROGRESS_LOG.txt", self.matrix,
+                   fmt = '%' + str(self._just) + '.3g',
+                   delimiter = '\t', header = self.header_h)
 
     #===============================================================
     def save(self, fname):
@@ -140,19 +169,3 @@ class DataCollector(object):
         # output CSV
         np.savetxt(fname + ".csv",
                    self.matrix, delimiter = ",", header = self.header)
-
-        # output human readable
-        matrix_h = self._get_human_readable()
-        np.savetxt(fname + "_h.csv",
-                   matrix_h, delimiter = ",", header = self.header)
-
-    #===============================================================
-    # PRIVATE METHODS
-    #===============================================================
-    def _get_human_readable(self):
-        """Return human readable version of self.matrix.
-
-        Not implemented.
-        """
-
-        return self.matrix
