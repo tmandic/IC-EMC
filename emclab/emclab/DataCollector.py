@@ -97,51 +97,29 @@ class DataCollector(object):
                 numel.append(len(meas.data[key]))
             except TypeError:
                 # case 1
-                numel.append(0)
+                numel.append(1)
 
-##        # check data consistency
-##        if not all([val == numel[0] for val in numel]):
-##            raise ValueError("Data inconsistent!")
+        # get number of list entries and check data consistency
+            # all entries should be either scalars, or lists of equal length
+        N = max(numel)
+        if not all([val in [0, N] for val in numel]):
+            raise ValueError("Data inconsistent!")
 
-        # get number of list entries (or 0 for scalar case)
-        N = numel[0]
+        # define the new rows
+        new_data = np.ones((N, len(self._vars)))
 
-        if not N:
-            # define the new row
-            new_data = np.zeros(len(self._vars))
+        for param, col in self._vars.items():
+            if param in meas.data.keys():
+                new_data[:, col] *= meas.data[param]
+            else:
+                new_data[:, col] *= np.nan
 
-            for param, col in self._vars.items():
-                if param in meas.data.keys():
-                    new_data[col] = meas.data[param]
-                else:
-                    new_data[col] = np.nan
+        # calculate the timestamp and adding time
+        new_data[:, self._vars['TIMESTAMP']] *= meas.time_out
+        new_data[:, self._vars['ADDING_TIME']] *= meas.time_out - meas.time_in
 
-            # calculate the timestamp and adding time
-            new_data[self._vars['TIMESTAMP']] = meas.time_out
-            new_data[self._vars['ADDING_TIME']] = meas.time_out - meas.time_in
-
-            # append new row to matrix
-            self.matrix = np.vstack((self.matrix, new_data))
-
-        else:
-            # append data to the N last rows
-##            if len(self.matrix) < N:
-##                raise ValueError("Cannot append data to matrix!")
-            # if all data does not have the same length, crop the first entries
-            N_crop = min(numel)
-            for key in meas.data.keys():
-                meas.data[key] = meas.data[key][-N_crop:]
-
-            N_add = min(len(self.matrix), N)
-
-            # parse through the data
-            for key in meas.data.keys():
-                col = self._vars[key]
-                self.matrix[-N_add:, col] = meas.data[key][:N_add]
-
-            # check error message
-            if meas.error:
-                self.header = meas.error + "\n" + self.header
+        # append new row to matrix
+        self.matrix = np.vstack((self.matrix, new_data))
 
     #===============================================================
     def save(self, fname):
