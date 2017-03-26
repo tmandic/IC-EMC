@@ -4,10 +4,10 @@ import matplotlib.pyplot as plt
 
 defaults = {
     'scale'             : None,
-    'sizing'            : 42,
-    'legend_sizing'     : 29,
+    'sizing'            : 52,
+    'legend_sizing'     : 52,
     'figsize'           : [24, 12.85],
-    'linewidth'         : 5,
+    'linewidth'         : 7,
     'markersize'        : 15,
     'markeredge'        : 5,
     'gridwidth'         : 1.5,
@@ -48,7 +48,7 @@ def emclab_axes():
     # define the axes and grid properties
     plt.rcParams['axes.linewidth'] = vals.frame_width
     plt.rcParams['axes.labelsize'] = vals.sizing
-    plt.rcParams['axes.titlesize'] = vals.sizing
+    plt.rcParams['axes.titlesize'] = vals.legend_sizing
     plt.rcParams['axes.axisbelow'] = vals.axisbelow
     plt.rcParams['axes.grid'] = vals.grid
     plt.rcParams['axes.grid.which'] = vals.grid_which
