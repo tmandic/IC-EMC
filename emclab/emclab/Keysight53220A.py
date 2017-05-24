@@ -424,11 +424,11 @@ class Keysight53220A(GPIB):
         else:
             freq = [float(s) for s in freq0.split(",")]
             print("The measurement for\nN = {}\nand\nGatetime = {} s\ntook: {} s.\n".format(self.trigcoun,self.gatetime,dt))
-            sent = "The measured frequencies are: {} Hz.\n".format(freq)
+##            sent = "The measured frequencies are: {} Hz.\n".format(freq)
 
         if ((self.gatetime>1) or (self.trigcoun>1)):
             self._dev.timeout = timeout
-
+        sent = ''
         self._timestamp()
         self._sent = self._sent1 + str(self.time) + self._sent2
         sentence = self._sent + sent
